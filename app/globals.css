@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+:root {
+  --background: #fefeff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #e5e5e6;
+    /* --foreground: #ededed; */
+    --font-body: var(--font-noto-sans);
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-body), sans-serif;
+}
+
+
+.logoclr {
+  background-color: #fefeff;
+}
+
+
+.collapsible-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s ease-out, padding 0.5s ease-out;
+}
+
+.collapsible-content.expanded {
+  max-height: 500px;
+  /* İçeriğin maksimum yüksekliğini ayarlayın */
+  padding: 1rem;
+  /* İçeriğin padding değerini ayarlayın */
+
+}
+
+.no-select {
+  user-select: none;
+}
