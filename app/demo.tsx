@@ -179,7 +179,7 @@ export default function Home() {
                       fill
                       className="object-contain"
                       alt={`${operator.idName}`}
-                      priority={true}
+                      priority
                     />
                   </div>
                 </Link>

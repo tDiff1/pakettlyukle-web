@@ -78,7 +78,7 @@ export default function Page() {
                         width={250}
                         height={250}
                         className="p-6 mb-4  rounded-3xl md:mb-0 bg-[#e5e5e6]"
-                        priority={true}
+                        priority
                     />
                 ) : (
                     <div className="w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center text-gray-600 text-lg">

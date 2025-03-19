@@ -1,0 +1,18 @@
+DATABASE_URL="mysql://u409858190_pakettlyukle:tDiff07!@srv1536.hstgr.io/u409858190_pakettlyukle"
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Content {
+  id        Int      @id @default(autoincrement())
+  page      String
+  section   String
+  text      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

@@ -90,7 +90,7 @@ const MyCarousel = () => {
                                 fill
                                 className="object-contain"
                                 alt={`${operator.idName}`}
-                                priority={true}
+                                priority
                             />
                         </div>
                     </Link>
