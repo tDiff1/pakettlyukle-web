@@ -7,6 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+<<<<<<< HEAD
 model Home {
   id      Int    @id @default(autoincrement())
   key     String @unique
@@ -52,3 +53,11 @@ model Packets {
   heryone_sms    Int
   heryone_int    Int
 }
+=======
+
+model Content {
+  page        String @db.VarChar(255)  
+  id          String @db.VarChar(255) @id
+  content     String @db.VarChar(255)
+}
+>>>>>>> c9a93b435d1bc4a9c7a940365997a154278cb8c2
