@@ -1,16 +1,92 @@
 "use client";
 
-import { questions, Question } from "@/app/tools/sss";
 import Image from "next/image";
 import "react-multi-carousel/lib/styles.css";
 import MyCarousel from "@/app/tools/op-carusel/operators";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { operatorler } from "@/app/tools/operatorler";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import Loading from "./loading";
 
+type Content = {
+  id: number;
+  key: string;
+  content: string;
+};
+
+type Faq = {
+  id: number;
+  key: string;
+  question: string;
+  answer: string;
+};
+
+type Operators = {
+  id: number;
+  key: string;
+  name: string;
+  idName: string;
+  imageID: string;
+  hover: string;
+};
 
 export default function Home() {
+
+  const [data, setData] = useState<Content[]>([]);
+  const [operators, setOperators] = useState<Operators[]>([]);
+  const [faqs, setFaqs] = useState<Faq[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // useEffect(() => {
+  //   fetch("/api/table/home")
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       setData(data);
+  //       setIsLoading(false); // Veri yüklendiğinde loading durumunu kapat
+  //     })
+  //     .catch((err) => {
+  //       console.error("Veri alınamadı:", err)
+  //       setIsLoading(false); // Hata olsa bile yüklemeyi kapat
+  //     });
+  // }, []);
+
+  // useEffect(() => {
+  //   fetch("/api/table/faq")
+  //     .then((res) => res.json())
+  //     .then((data) => setFaqs(data)) // Gelen veriyi doğru şekilde state'e kaydediyoruz
+  //     .catch((err) => console.error("Veri alınamadı:", err));
+  // }, []);
+
+  // useEffect(() => {
+  //   fetch("/api/table/operators")
+  //     .then((res) => res.json())
+  //     .then((data) => setOperators(data))
+  //     .catch((err) => console.error("Veri alınamadı:", err));
+  // }, []);
+
+
+  useEffect(() => {
+    Promise.all([
+      fetch("/api/table/home").then((res) => res.json()),
+      fetch("/api/table/faq").then((res) => res.json()),
+      fetch("/api/table/operators").then((res) => res.json()),
+    ])
+      .then(([homeData, faqData, operatorsData]) => {
+        setData(homeData);
+        setFaqs(faqData);
+        setOperators(operatorsData);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error("Veri alınamadı:", err);
+        setIsLoading(false); // Hata olsa bile yüklenmeyi kapat
+      });
+  }, []);
+
+  // key'e göre içeriği al
+  const getContent = (key: string) => {
+    return data.find((item) => item.key === key)?.content || "Yükleniyor...";
+  };
+
   // Şu anda açık olan sorunun index'ini tutan state
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
@@ -19,6 +95,14 @@ export default function Home() {
     // Eğer tıklanan soru zaten açıksa, onu kapat
     setOpenIndex(openIndex === index ? null : index);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loading />
+      </div>
+    );
+  }
 
   return (
     <div className=" flex flex-col items-center p-2 sm:p-4 md:p-10 no-select">
@@ -31,22 +115,22 @@ export default function Home() {
           </div>
 
           <div className="text-center relative lg:left-14 sm:text-left">
-            <h2 className="text-lg sm:text-xl md:text-2xl  font-semibold">
-              Paket TL Yükle ile Kolayca Online Paket & Kontör Yükle
+            <h2 id="home_title" className="text-lg sm:text-xl md:text-2xl  font-semibold">
+              {getContent("paket_title")}
             </h2>
             <hr className="my-2 sm:my-3 border-gray-400" />
-            <p className="font-bold text-center text-xs sm:text-sm md:text-base">
-              Operatör seçerek GSM TL & Paket yükleyin!
+            <p id="home_content" className="font-bold text-center text-xs sm:text-sm md:text-base">
+              {getContent("paket_explanation")}
             </p>
           </div>
         </div>
 
         {/* Adım Listesi */}
         <div className="bg-white p-3 sm:p-4 md:p-6 rounded-3xl shadow-md my-4 sm:my-6 md:my-10 w-full max-w-4xl">
-          <h2 className="text-2xl font-semibold text-center">KONTÖR NASIL YÜKLENİR?</h2>
+          <h2 className="text-2xl font-semibold text-center">{getContent("step_title")}</h2>
           <hr className=" w-1/2 mx-auto my-2 sm:my-3 border-gray-400 pb-2" />
           <div className="grid lg:grid-cols-4 gap-2 sm:gap-3">
-            {["Operatör Seçimi", "Numaranızı Girin", "Paket & TL Seçin", "İşlemi Tamamlayın"].map((step, index) => (
+            {[`${getContent("step_one")}`, `${getContent("step_two")}`, `${getContent("step_three")}`, `${getContent("step_four")}`].map((step, index) => (
               <div
                 key={index}
                 className="bg-[#e5e5e6] text-black p-2 sm:p-3 rounded-xl font-medium flex items-center gap-2"
@@ -69,10 +153,10 @@ export default function Home() {
         {/* Sıkça Sorulan Sorular */}
         <div className="bg-white p-3 sm:p-4 md:p-6 rounded-3xl shadow-md my-4 sm:my-5 w-full max-w-4xl">
           <h1 className=" sm:text-base md:text-lg  lg:text-xl font-semibold mb-2 sm:mb-3">
-            Sıkça Sorulan Sorular
+            {getContent("faq_title")}
           </h1>
           <div className="space-y-2 ">
-            {questions.map((item: Question, index: number) => (
+            {faqs.map((item, index: number) => (
               <div key={index} className="w-full">
                 <div
                   className="bg-[#e5e5e6]  rounded-xl p-2 sm:p-3  font-medium flex items-center gap-2 cursor-pointer no-select"
@@ -127,67 +211,55 @@ export default function Home() {
 
       {/* Telefon */}
       <div className="block md:hidden">
-      <div className="flex flex-col items-center p-4 sm:p-6 md:p-10 lg:p-16 no-select">
+        <div className="flex flex-col items-center p-4 sm:p-6 md:p-10 lg:p-16 no-select">
 
-        {/* Başlık: Bildirim İkonu ve Operatör Bilgisi */}
-        <div className="flex items-center justify-between w-full max-w-6xl bg-white p-6 rounded-3xl shadow-md">
+          {/* Başlık: Bildirim İkonu ve Operatör Bilgisi */}
+          <div className="flex items-center justify-between w-full max-w-6xl bg-white p-6 rounded-3xl shadow-md">
 
-          {/* Breadcrumb Kısmı: Mobilde gizlenir */}
-          <div className="text-xl hidden md:block">
-            <Breadcrumb>
-              <BreadcrumbList className="text-xl">
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="/">Kontör Yükleme</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-              </BreadcrumbList>
-            </Breadcrumb>
+            {/* Bildirim İkonu ve Yazı Alanı */}
+            <div className="flex items-center gap-3 w-full md:w-auto justify-between">
+              <Image
+                src={'/notification.png'}
+                alt="Bildirim"
+                width={60}
+                height={60}
+                className="block"
+              />
+              <div className="flex flex-col justify-center w-full text-center md:text-left">
+                <h1 className="font-semibold text-lg md:text-xl">{getContent("paket_title")}</h1> {/* Başlık boyutu küçültüldü */}
+                <p className="text-sm md:text-base">{getContent("mobile_paket_explanation")}</p> {/* Yazı boyutu mobilde küçük */}
+              </div>
+            </div>
           </div>
 
-          {/* Bildirim İkonu ve Yazı Alanı */}
-          <div className="flex items-center gap-3 w-full md:w-auto justify-between">
-            <Image
-              src={'/notification.png'}
-              alt="Bildirim"
-              width={60}
-              height={60}
-              className="block"
-            />
-            <div className="flex flex-col justify-center w-full text-center md:text-left">
-              <h1 className="font-semibold text-lg md:text-xl">Pakettlyukle ile Paket & TL Kontör Yükle</h1> {/* Başlık boyutu küçültüldü */}
-              <p className="text-sm md:text-base">TL ve Paket yüklemek için Operatörünüzü seçiniz</p> {/* Yazı boyutu mobilde küçük */}
+          {/* Operatör Resmi ve Operatör Değiş Butonu */}
+          <div className="flex flex-col md:flex-row justify-between items-center w-full max-w-6xl bg-white p-6 rounded-3xl shadow-md my-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 w-full">
+              {operators.map((operator) => (
+                <div
+                  key={operator.id}
+                  className={`bg-[#e5e5e6] ${operator.hover} text-white p-4 rounded-xl mx-1 h-full flex items-center justify-center hover:scale-105 transform transition-transform duration-500 ease-in-out`}
+                  style={{ minHeight: '120px' }} // Minimum yükseklik
+                >
+                  <Link
+                    href={`/kontor-yukleme/${operator.idName}`}
+                    className={`flex flex-col items-center justify-center w-full h-full gap-2`}
+                  >
+                    <div className="relative w-full h-20">
+                      <Image
+                        src={`/operatorler/${operator.imageID}`}
+                        fill
+                        className="object-contain"
+                        alt={`${operator.idName}`}
+                        priority
+                      />
+                    </div>
+                  </Link>
+                </div>
+              ))}
             </div>
           </div>
         </div>
-
-        {/* Operatör Resmi ve Operatör Değiş Butonu */}
-        <div className="flex flex-col md:flex-row justify-between items-center w-full max-w-6xl bg-white p-6 rounded-3xl shadow-md my-6">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 w-full">
-            {operatorler.map((operator) => (
-              <div
-                key={operator.id}
-                className={`bg-[#e5e5e6] ${operator.hover} text-white p-4 rounded-xl mx-1 h-full flex items-center justify-center hover:scale-105 transform transition-transform duration-500 ease-in-out`}
-                style={{ minHeight: '120px' }} // Minimum yükseklik
-              >
-                <Link
-                  href={`/kontor-yukleme/${operator.idName}`}
-                  className={`flex flex-col items-center justify-center w-full h-full gap-2`}
-                >
-                  <div className="relative w-full h-20">
-                    <Image
-                      src={`/operatorler/${operator.imageID}`}
-                      fill
-                      className="object-contain"
-                      alt={`${operator.idName}`}
-                      priority
-                    />
-                  </div>
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
       </div>
     </div>
   );

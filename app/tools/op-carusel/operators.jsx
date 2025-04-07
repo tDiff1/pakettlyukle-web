@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
@@ -7,6 +8,7 @@ import { operatorler } from "@/app/tools/operatorler";
 import Link from "next/link";
 import Image from "next/image";
 import "@/app/tools/op-carusel/arrow.css";
+
 
 const CustomLeftArrow = ({ onClick }) => {
     return (
@@ -54,7 +56,18 @@ const responsive = {
 };
 
 const MyCarousel = () => {
+
+      const [data, setData] = useState([]);
+    
+      useEffect(() => {
+        fetch("/api/table/operators")
+          .then((res) => res.json())
+          .then((data) => setData(data))
+          .catch((err) => console.error("Veri alınamadı:", err));
+      }, []);
+
     return (
+        
         <Carousel
             swipeable={true}
             draggable={false}
@@ -74,7 +87,7 @@ const MyCarousel = () => {
             dotListClass="custom-dot-list-style"
             itemClass="px-2" // Daha tutarlı boşluk için
         >
-            {operatorler.map((operator) => (
+            {data.map((operator) => (
                 <div 
                     key={operator.id} 
                     className= {`bg-[#e5e5e6] ${operator.hover} shadow-md text-white p-10 rounded-xl mx-1 h-full flex items-center justify-center hover:scale-105 transform transition-transform duration-500 ease-in-out`} 

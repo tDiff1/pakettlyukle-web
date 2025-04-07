@@ -1,4 +1,3 @@
-DATABASE_URL="mysql://u409858190_pakettlyukle:tDiff07!@srv1536.hstgr.io/u409858190_pakettlyukle"
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,11 +7,48 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Content {
-  id        Int      @id @default(autoincrement())
-  page      String
-  section   String
-  text      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Home {
+  id      Int    @id @default(autoincrement())
+  key     String @unique
+  content String
+}
+
+model Faq {
+  id       Int    @id @default(autoincrement())
+  key      String @unique
+  question String
+  answer   String
+}
+
+model Operators {
+  id      Int    @id @default(autoincrement())
+  key     String @unique
+  name    String
+  idName  String @unique
+  imageID String @unique
+  hover   String
+}
+
+model Header {
+  id      Int    @id @default(autoincrement())
+  key     String @unique
+  content String
+}
+
+model Footer {
+  id      Int    @id @default(autoincrement())
+  key     String @unique
+  content String
+}
+
+model Packets {
+  id             Int    @id @default(autoincrement())
+  key            String
+  packet_title   String
+  packet_content String
+  kupur          String
+  heryone_dk     Int
+  yd_dk          Int
+  heryone_sms    Int
+  heryone_int    Int
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
 import { operatorler } from "@/app/tools/operatorler";
@@ -13,15 +13,51 @@ import {
 } from "@/components/ui/breadcrumb";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
+type Packets = {
+    id: number;
+    key: string;
+    packet_title: string;
+    packet_content: string;
+    kupur: string;
+    heryone_dk: number;
+    yd_dk: number;
+    heryone_sms: number;
+    heryone_int: number;
+};
 
 export default function Page() {
     const router = useRouter();
     const params = useParams();
-
+    const [phone, setPhone] = useState(""); // Telefon numarası
+    const [isOpen, setIsOpen] = useState(false); // Kutu açık mı?
+    const [error, setError] = useState(""); // Hata mesajı
     const selectedOperator = operatorler.find(op => op.idName === params.operator) || operatorler[0] as { idName: string, name: string, imageID?: string };
+    const [packet, setData] = useState<Packets[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const [phone, setPhone] = useState("");
-    
+    useEffect(() => {
+        fetch("../api/table/packets")
+            .then((res) => res.json())
+            .then((packets) => {
+                setData(packets);
+                setIsLoading(false); // Veri yüklendiğinde loading durumunu kapat
+            })
+            .catch((err) => {
+                console.error("Veri alınamadı:", err)
+                setIsLoading(false); // Hata olsa bile yüklemeyi kapat
+            });
+    }, []);
+
+    // Butona tıklanınca çalışacak fonksiyon
+    const handleButtonClick = () => {
+        if (phone.length < 13) {
+            setError("Telefon numarası eksik veya hatalı!");
+            setIsOpen(false);
+        } else {
+            setError(""); // Hata mesajını temizle
+            setIsOpen(true);
+        }
+    };
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let value = e.target.value.replace(/\D/g, "");
         value = value.slice(0, 10); // Maksimum 10 hane
@@ -38,7 +74,7 @@ export default function Page() {
     return (
 
         <div className="flex flex-col items-center p-4 sm:p-6 md:p-10 no-select">
-
+            {/* Logo ve Başlık */}
             {/* Başlık: Bildirim İkonu ve Operatör Bilgisi */}
             <div className="flex items-center justify-between w-full max-w-6xl bg-white p-6 rounded-3xl shadow-md">
                 <div className="text-xl hidden md:block">
@@ -123,33 +159,81 @@ export default function Page() {
                 <div className="w-full max-w-md">
                     <div className="flex flex-col gap-4">
                         {/* Telefon Numarası Girişi */}
-                        <div className="flex items-center gap-2 border  border-gray-300 p-3 rounded-2xl shadow-sm">
-                            <span className="font-semibold">+90</span>
-                            <input
-                                type="tel"
-                                placeholder="Telefon numaranızı giriniz"
-                                className="w-full p-2 focus:outline-none font-semibold"
-                                maxLength={13}
-                                value={phone}
-                                onChange={handleInputChange}
+                        {!isOpen && (
+                            <div className="flex items-center gap-2 border border-gray-300 p-3 rounded-2xl shadow-sm">
+                                <span className="font-semibold">+90</span>
+                                <input
+                                    type="tel"
+                                    placeholder="Telefon numaranızı giriniz"
+                                    className="w-full p-2 focus:outline-none font-semibold"
+                                    maxLength={13}
+                                    value={phone}
+                                    onChange={handleInputChange}
+                                />
+                            </div>
+                        )}
 
-                            />
-                        </div>
+                        {/* Hata Mesajı */}
+                        {!isOpen && error && (
+                            <p className="text-red-500 font-semibold text-center text-xs md:text-sm">{error}</p>
+                        )}
 
                         {/* Uyarı Metni */}
-                        <p className="text-red-500 font-semibold text-center text-xs md:text-sm">
-                            Yalnızca faturasız hatlar için geçerlidir
-                        </p>
+                        {!isOpen && (
+                            <p className="text-red-500 font-semibold text-center text-xs md:text-sm">
+                                Yalnızca faturasız hatlar için geçerlidir
+                            </p>
+                        )}
 
-                        {/* TL Yükle ve Paket Yükle Butonları */}
-                        <div className="flex gap-4 justify-center">
-                            <button className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition font-semibold shadow-md" >
-                                Paket & TL Yükle
-                            </button>
-                        </div>
+                        {/* TL Yükle ve Paket Yükle Butonu */}
+                        {!isOpen && (
+                            <div className="flex gap-4 justify-center">
+                                <button
+                                    className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition font-semibold shadow-md"
+                                    onClick={handleButtonClick}
+                                >
+                                    Paket & TL Yükle
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Kullanıcının Telefon Numarası */}
+                        {isOpen && (
+                            <div className="text-center">
+                                <p className="text-lg font-semibold">Telefon Numaranız:</p>
+                                <p className="text-xl font-bold text-gray-800">+90 {phone}</p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
+            {/* Paket Listesi */}
+
+            {/* Açılacak Kutu */}
+            {isOpen && (
+                <div className="w-full max-w-6xl bg-white  rounded-3xl shadow-md my-6">
+                    
+                        <h1 className="text-center text-4xl font-bold  my-6 mb-10">Paketler</h1>
+                        <div className=" bg-white p-4 rounded-lg shadow-lg ">
+                        {/* Paket Listesi */}
+                        <ul className="grid grid-cols-2 gap-4 ">
+                            {packet
+                                .filter(p => p.key === selectedOperator.idName) // Filtreleme işlemi
+                                .map(filteredPacket => (
+                                    <li
+                                        key={filteredPacket.id}
+                                        className=" p-3 bg-[#e5e5e6] rounded-3xl shadow-sm hover:bg-gray-100 transition "
+                                    >
+                                        <h3 className="font-semibold text-center text-gray-800">{filteredPacket.packet_title}</h3>
+                                        <p className="text-sm text-gray-600">{filteredPacket.packet_content}</p>
+                                    </li>
+                                ))}
+                        </ul>
+                    </div>
+                </div>
+            )}
+
+            
         </div>
     );
 }

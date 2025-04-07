@@ -1,14 +1,47 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Menu, X } from 'lucide-react'
 
+type Content = {
+  id: number;
+  key: string;
+  content: string;
+};
+
 const Header = () => {
   const pathname = usePathname() || '/';
   const [menuOpen, setMenuOpen] = useState(false);
+  const [data, setData] = useState<Content[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
+  useEffect(() => {
+    fetch("/api/table/header")
+      .then((res) => res.json())
+      .then((data) => {
+        setData(data);
+        setIsLoading(false); // Veri yüklendiğinde loading durumunu kapat
+      })
+      .catch((err) => {
+        console.error("Veri alınamadı:", err)
+         setIsLoading(false); // Hata olsa bile yüklemeyi kapat
+      });
+  }, []);
+
+
+  // key'e göre içeriği al
+  const getContent = (key: string) => {
+    return data.find((item) => item.key === key)?.content || "Yükleniyor...";
+  };
+
+  if (isLoading) {
+    return (
+      <div>
+      </div>
+    );
+  }
   return (
     <header className="relative w-full px-4 sm:px-6 lg:px-8 py-4">
       <div className="max-w-full flex items-center justify-between">
@@ -47,26 +80,26 @@ const Header = () => {
           </button>
 
           <nav className="flex flex-col mt-16 p-5 gap-6">
-          <Link
+            <Link
               className={`text-lg p-2 ${pathname === '/' ? 'font-semibold text-gray-800 border-b-2 border-gray-800' : 'text-gray-600 hover:text-gray-800'}`}
               href='/'
               onClick={() => setMenuOpen(false)}
             >
-              Kontör Yükleme
+              {getContent("title_one")}
             </Link>
             <Link
               className={`text-lg p-2 ${pathname === '/blog' ? 'font-semibold text-gray-800 border-b-2 border-gray-800' : 'text-gray-600 hover:text-gray-800'}`}
               href='/blog'
               onClick={() => setMenuOpen(false)}
             >
-              Blog
+              {getContent("title_two")}
             </Link>
             <Link
               className={`text-lg p-2 ${pathname === '/kurumsal' ? 'font-semibold text-gray-800 border-b-2 border-gray-800' : 'text-gray-600 hover:text-gray-800'}`}
               href='/kurumsal'
               onClick={() => setMenuOpen(false)}
             >
-              Kurumsal
+              {getContent("title_three")}
             </Link>
           </nav>
         </div>
@@ -91,7 +124,7 @@ const Header = () => {
                 href='/'
                 onClick={() => setMenuOpen(false)}
               >
-                Kontör Yükleme
+                {getContent("title_one")}
               </Link>
             </p>
             <p className="relative w-full sm:w-auto text-center">
@@ -103,7 +136,7 @@ const Header = () => {
                 href='/blog'
                 onClick={() => setMenuOpen(false)}
               >
-                Blog
+                {getContent("title_two")}
               </Link>
             </p>
             <p className="relative w-full sm:w-auto text-center">
@@ -115,12 +148,12 @@ const Header = () => {
                 href='/kurumsal'
                 onClick={() => setMenuOpen(false)}
               >
-                Kurumsal
+                {getContent("title_three")}
               </Link>
             </p>
           </div>
         </nav>
-        
+
         {/* bos div */}
         <div className={`w-full sm:w-auto hidden sm:block pl-48`}></div>
       </div>
