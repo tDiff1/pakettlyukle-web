@@ -23,6 +23,7 @@ type Packets = {
     yd_dk: number;
     heryone_sms: number;
     heryone_int: number;
+    price: number;
 };
 
 export default function Page() {
@@ -34,6 +35,7 @@ export default function Page() {
     const selectedOperator = operatorler.find(op => op.idName === params.operator) || operatorler[0] as { idName: string, name: string, imageID?: string };
     const [packet, setData] = useState<Packets[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [selectedPacket, setSelectedPacket] = useState<Packets | null>(null); // Seçilen paket
 
     useEffect(() => {
         fetch("../api/table/packets")
@@ -69,6 +71,10 @@ export default function Page() {
             .trim();
 
         setPhone(formattedValue);
+    };
+
+    const handlePacketSelect = (packet: Packets) => {
+        setSelectedPacket(packet); // Seçilen paketi kaydet
     };
 
     return (
@@ -207,33 +213,111 @@ export default function Page() {
                     </div>
                 </div>
             </div>
-            {/* Paket Listesi */}
 
             {/* Açılacak Kutu */}
             {isOpen && (
-                <div className="w-full max-w-6xl bg-white  rounded-3xl shadow-md my-6">
-                    
-                        <h1 className="text-center text-4xl font-bold  my-6 mb-10">Paketler</h1>
-                        <div className=" bg-white p-4 rounded-lg shadow-lg ">
-                        {/* Paket Listesi */}
-                        <ul className="grid grid-cols-2 gap-4 ">
-                            {packet
-                                .filter(p => p.key === selectedOperator.idName) // Filtreleme işlemi
-                                .map(filteredPacket => (
-                                    <li
-                                        key={filteredPacket.id}
-                                        className=" p-3 bg-[#e5e5e6] rounded-3xl shadow-sm hover:bg-gray-100 transition "
+                <div className="w-full max-w-6xl bg-white rounded-3xl shadow-md my-6">
+                    {selectedPacket ? (
+                        <div>
+                            {/* Seçilen Paket Görünümü */}
+                            <div className="relative p-4">
+                                {/* Geri Dön Butonu */}
+                                <div className="flex justify-start mb-6">
+                                    <button
+                                        className="bg-blue-500 text-white px-4 py-2 rounded-3xl hover:bg-blue-600 transition"
+                                        onClick={() => setSelectedPacket(null)} // Geri dön
                                     >
-                                        <h3 className="font-semibold text-center text-gray-800">{filteredPacket.packet_title}</h3>
-                                        <p className="text-sm text-gray-600">{filteredPacket.packet_content}</p>
-                                    </li>
-                                ))}
-                        </ul>
-                    </div>
+                                        Geri Dön
+                                    </button>
+                                </div>
+                                <div>
+                                    <h2 className="text-xl sm:text-2xl font-bold text-gray-800 text-center mb-8">
+                                        Seçilen Paket
+                                    </h2>
+                                </div>
+                                {/* Seçilen Paket İçeriği */}
+                                <div className="bg-[#e5e5e6] rounded-3xl shadow-lg p-6 flex flex-col items-center">
+                                    <h3 className="font-semibold text-2xl text-center text-gray-800">
+                                        {selectedPacket.packet_title}
+                                    </h3>
+                                    <div className="text-center mt-4">
+                                        <p className="text-base text-gray-600">{selectedPacket.packet_content}</p>
+                                        <p className="text-base text-gray-600">Heryöne {selectedPacket.heryone_dk} Dakika</p>
+                                        <p className="text-base text-gray-600">Yurt Dışı {selectedPacket.yd_dk} Dakika</p>
+                                        <p className="text-base text-gray-600">Heryöne {selectedPacket.heryone_sms} SMS</p>
+                                        <p className="text-base text-gray-600">Heryöne {selectedPacket.heryone_int} MB İnternet</p>
+                                        <p className="text-xl font-bold text-gray-800 mt-4">{selectedPacket.price} TL</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {selectedPacket && (
+                                <div className="mt-6 bg-white p-6 rounded-3xl shadow-lg">
+                                    <h2 className="text-xl sm:text-2xl font-bold text-gray-800 text-center mb-6">
+                                        Ödeme Yöntemleri
+                                    </h2>
+                                    <div className="flex flex-col sm:flex-row justify-center gap-4">
+                                        <button className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition font-semibold shadow-md">
+                                            Kredi Kartı ile Öde
+                                        </button>
+                                        <button className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition font-semibold shadow-md">
+                                            Banka Kartı ile Öde
+                                        </button>
+                                        <button className="bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600 transition font-semibold shadow-md">
+                                            Mobil Ödeme
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        // Paket Listesi Görünümü
+                        <div>
+                            <h1 className="text-center text-2xl sm:text-3xl lg:text-4xl font-bold my-6 mb-10">Paketler</h1>
+                            <div className="bg-white p-4 rounded-lg shadow-lg">
+                                <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
+                                    {packet
+                                        .filter(p => p.key === selectedOperator.idName)
+                                        .map(filteredPacket => (
+                                            <li
+                                                key={filteredPacket.id}
+                                                className="p-3 bg-[#e5e5e6] rounded-3xl shadow-sm hover:bg-gray-100 transition cursor-pointer flex flex-col justify-between"
+                                                onClick={() => handlePacketSelect(filteredPacket)} // Paket seçimi
+                                            >
+                                                <h3 className="font-semibold text-lg sm:text-xl lg:text-2xl text-center text-gray-800">
+                                                    {filteredPacket.packet_title}
+                                                </h3>
+                                                <div className="text-center mt-2">
+                                                    <p className="text-xs sm:text-sm lg:text-base text-gray-600">
+                                                        {filteredPacket.packet_content}
+                                                    </p>
+                                                </div>
+                                                <div className="text-center mt-2">
+                                                    <p className="text-xs sm:text-sm lg:text-base text-gray-600">
+                                                        Heryöne {filteredPacket.heryone_dk} Dakika
+                                                    </p>
+                                                    <p className="text-xs sm:text-sm lg:text-base text-gray-600">
+                                                        Yurt Dışı {filteredPacket.yd_dk} Dakika
+                                                    </p>
+                                                    <p className="text-xs sm:text-sm lg:text-base text-gray-600">
+                                                        Heryöne {filteredPacket.heryone_sms} SMS
+                                                    </p>
+                                                    <p className="text-xs sm:text-sm lg:text-base text-gray-600">
+                                                        Heryöne {filteredPacket.heryone_int} MB İnternet
+                                                    </p>
+                                                </div>
+                                                <div className="mt-4 flex justify-center items-center text-xl w-full">
+                                                    <button className="w-full max-w-[150px] p-3 bg-[#fefeff] hover:bg-[#e5e5e6] text-gray-600 font-bold text-center rounded-3xl">
+                                                        {filteredPacket.price} TL
+                                                    </button>
+                                                </div>
+                                            </li>
+                                        ))}
+                                </ul>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
-
-            
         </div>
     );
 }
