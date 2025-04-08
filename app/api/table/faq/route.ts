@@ -8,6 +8,7 @@ export async function GET() {
     
     return Response.json(faqs, { status: 200 }); 
   } catch (error) {
+    console.error(error);
     return Response.json({ error: "Veri alınamadı" }, { status: 500 });
   }
 }

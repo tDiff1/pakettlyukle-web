@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
-import { operatorler } from "@/app/tools/operatorler";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -12,6 +11,7 @@ import {
     BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import Loading from "../../loading";
 
 type Packets = {
     id: number;
@@ -26,29 +26,55 @@ type Packets = {
     price: number;
 };
 
+type Operators = {
+    id: number;
+    key: string;
+    name: string;
+    idName: string;
+    imageID: string;
+    hover: string;
+  };
+
 export default function Page() {
     const router = useRouter();
     const params = useParams();
     const [phone, setPhone] = useState(""); // Telefon numarası
     const [isOpen, setIsOpen] = useState(false); // Kutu açık mı?
     const [error, setError] = useState(""); // Hata mesajı
-    const selectedOperator = operatorler.find(op => op.idName === params.operator) || operatorler[0] as { idName: string, name: string, imageID?: string };
-    const [packet, setData] = useState<Packets[]>([]);
+    const [operators, setOperators] = useState<Operators[]>([]);
+    const selectedOperator = operators.find(op => op.idName === params.operator) || operators[0] as { idName: string, name: string, imageID?: string };
+    const [packet, setPackets] = useState<Packets[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedPacket, setSelectedPacket] = useState<Packets | null>(null); // Seçilen paket
 
     useEffect(() => {
-        fetch("../api/table/packets")
-            .then((res) => res.json())
-            .then((packets) => {
-                setData(packets);
-                setIsLoading(false); // Veri yüklendiğinde loading durumunu kapat
-            })
-            .catch((err) => {
-                console.error("Veri alınamadı:", err)
-                setIsLoading(false); // Hata olsa bile yüklemeyi kapat
-            });
-    }, []);
+        Promise.all([
+          fetch("/api/table/operators").then((res) => res.json()),
+          fetch("/api/table/packets").then((res) => res.json()),
+        ])
+          .then(([operatorsData, packetsData]) => {
+            setOperators(operatorsData);
+            setPackets(packetsData)
+            setIsLoading(false);
+          })
+          .catch((err) => {
+            console.error("Veri alınamadı:", err);
+            setIsLoading(false); // Hata olsa bile yüklenmeyi kapat
+          });
+      }, []);
+
+    // useEffect(() => {
+    //     fetch("../api/table/packets")
+    //         .then((res) => res.json())
+    //         .then((packets) => {
+    //             setData(packets);
+    //             setIsLoading(false); // Veri yüklendiğinde loading durumunu kapat
+    //         })
+    //         .catch((err) => {
+    //             console.error("Veri alınamadı:", err)
+    //             setIsLoading(false); // Hata olsa bile yüklemeyi kapat
+    //         });
+    // }, []);
 
     // Butona tıklanınca çalışacak fonksiyon
     const handleButtonClick = () => {
@@ -76,6 +102,14 @@ export default function Page() {
     const handlePacketSelect = (packet: Packets) => {
         setSelectedPacket(packet); // Seçilen paketi kaydet
     };
+
+    if (isLoading) {
+        return (
+          <div className="flex items-center justify-center h-screen">
+            <Loading />
+          </div>
+        );
+      }
 
     return (
 
@@ -139,7 +173,7 @@ export default function Page() {
                             </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-48 bg-white border border-gray-300 rounded-lg shadow-lg overflow-hidden animate-fade-in">
-                            {operatorler.map(op => (
+                            {operators.map(op => (
                                 <DropdownMenuItem
                                     key={op.idName}
                                     onClick={() => router.push(`/kontor-yukleme/${op.idName}`)}
