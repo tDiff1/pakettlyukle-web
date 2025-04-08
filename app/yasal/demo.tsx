@@ -4,12 +4,37 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import clsx from "clsx";
 import React from "react";
+import Loading from "../loading";
 
-
+type Yasal = {
+    id: number;
+    key: string;
+    content: string;
+};
 const YasalContent = () => {
     const searchParams = useSearchParams();
     const section = searchParams.get("section");
     const [highlighted, setHighlighted] = useState<string | null>(null);
+    const [data, setData] = useState<Yasal[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        fetch("/api/table/yasal")
+            .then((res) => res.json())
+            .then((data) => {
+                setData(data);
+                setIsLoading(false);
+            })
+            .catch((err) => {
+                console.error("Veri alınamadı:", err)
+                setIsLoading(false); // Hata olsa bile yüklenmeyi kapat
+            });
+    }, []);
+
+    // key'e göre içeriği al
+    const getContent = (key: string) => {
+        return data.find((item) => item.key === key)?.content || "Yükleniyor...";
+    };
 
     useEffect(() => {
         if (section) {
@@ -24,12 +49,20 @@ const YasalContent = () => {
         }
     }, [section]);
 
+    if (isLoading) {
+        return (
+          <div className="flex items-center justify-center h-screen">
+            <Loading />
+          </div>
+        );
+    }
+
     return (
         <div className="container mx-auto p-6">
 
             {/* Yasal Bilgiler Başlık */}
             <div className="justify-center items-center flex mb-8">
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-center bg-white w-fit p-5 rounded-3xl">Yasal Bilgiler</h1>
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-center bg-white w-fit p-5 rounded-3xl">{getContent('yasal_title')}</h1>
             </div>
 
             {/* İptal-iade */}
@@ -41,19 +74,14 @@ const YasalContent = () => {
                         highlighted === "iptal-ve-iade" ? "bg-slate-300" : "bg-white"
                     )}
                 >
-                    <h2 className="text-lg sm:text-xl md:text-2xl font-semibold ">İptal ve İade Koşulları</h2>
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-semibold ">{getContent('iptal_title')}</h2>
                 </div>
                 <div className={clsx(
                     "mb-8 p-3 text-sm sm:text-md md:text-lg rounded-2xl transition-all duration-500  font-medium",
                     highlighted === "iptal-ve-iade" ? "bg-slate-300" : "bg-white"
                 )}>
                     <p className="mb-3">
-                        Ttelekominikasyon olarak, müşteri memnuniyetini ön planda tutuyoruz. Hizmetlerimizden herhangi biriyle ilgili iptal veya iade talebiniz olduğunda, aşağıdaki koşullar geçerlidir:<br />
-                    </p>
-                    <p>
-                        - Abonelik tabanlı hizmetlerde, iptal talepleri belirlenen fatura dönemleri içerisinde yapılmalıdır.<br />
-                        - Dijital ürünlerde iade yapılamaz. Ancak, eğer ürün henüz yüklenmemiş ise iade edilebilir.<br />
-                        - Fiziksel ürünlerde, cayma hakkı 14 gün içerisinde kullanılabilir ve iade prosedürlerimize uygun olarak işlem yapılmalıdır.
+                    {getContent('iptal_description')} <br />
                     </p>
                 </div>
             </div>
@@ -67,19 +95,15 @@ const YasalContent = () => {
                         highlighted === "kvkk" ? "bg-slate-300" : "bg-white"
                     )}
                 >
-                    <h2 className="text-lg sm:text-xl md:text-2xl font-semibold">KVKK(Kişisel Verileri Koruma Kanunu)</h2>
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-semibold">{getContent('kvkk_title')}</h2>
                 </div>
                 <div className={clsx(
                     "mb-8 p-3 text-sm sm:text-md md:text-lg rounded-2xl transition-all duration-500  font-medium",
                     highlighted === "kvkk" ? "bg-slate-300" : "bg-white"
                 )}>
                     <p className="mb-3">
-                        Ttelekominikasyon, Kişisel Verilerin Korunması Kanunu (KVKK) kapsamında, müşterilerinin kişisel verilerini hukuka uygun bir şekilde işlemektedir. Verilerinizin toplanma amaçları, saklanma süreleri ve üçüncü taraflarla paylaşım ilkelerimiz aşağıdaki gibidir:<br />
+                        {getContent('kvkk_description')}<br />
                     </p>
-                    <p>
-                        - Verileriniz yalnızca ilgili hizmetlerin sunulması amacıyla işlenmektedir.<br />
-                        - Verilerinizi izniniz olmadan üçüncü kişilerle paylaşmayız.<br />
-                        - KVK kanununa uygun olarak, verilerinize erişim, düzenleme ve silme hakkına sahipsiniz.</p>
                 </div>
             </div>
 
@@ -92,19 +116,14 @@ const YasalContent = () => {
                         highlighted === "gizlilik-politikasi" ? "bg-slate-300" : "bg-white"
                     )}
                 >
-                    <h2 className="text-lg sm:text-xl md:text-2xl font-semibold">Gizlilik Politikası</h2>
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-semibold">{getContent('gizlilik_title')}</h2>
                 </div>
                 <div className={clsx(
                     "mb-8 p-3 text-sm sm:text-md md:text-lg rounded-2xl transition-all duration-500  font-medium",
                     highlighted === "gizlilik-politikasi" ? "bg-slate-300" : "bg-white"
                 )}>
                     <p className="mb-3">
-                        Ttelekominikasyon olarak, müşterilerimizin gizliliğine büyük önem veriyoruz. Gizlilik politikamız aşağıdaki ilkeler çerçevesinde belirlenmiştir:<br />
-                    </p>
-                    <p>
-                        - Toplanan veriler yalnızca belirlenen hizmetler için kullanılır.<br />
-                        - Verileriniz güvenli sunucularımızda saklanmakta ve yetkisiz erişimlere karşı korunmaktadır.<br />
-                        - Kredi kartı ve ödeme bilgileri gibi hassas verileriniz şifreleme ile korunmaktadır.
+                        {getContent('gizlilik_description')}
                     </p>
                 </div>
             </div>
@@ -118,19 +137,16 @@ const YasalContent = () => {
                         highlighted === "kullanici-sozlesmesi" ? "bg-slate-300" : "bg-white"
                     )}
                 >
-                    <h2 className="text-lg sm:text-xl md:text-2xl font-semibold">Kullanıcı Sözleşmesi</h2>
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-semibold">{getContent('kulsoz_title')}</h2>
                 </div>
                 <div className={clsx(
                     "mb-8 p-3 text-sm sm:text-md md:text-lg rounded-2xl transition-all duration-500  font-medium",
                     highlighted === "kullanici-sozlesmesi" ? "bg-slate-300" : "bg-white"
                 )}>
                     <p className="mb-3">
-                        Ttelekominikasyon hizmetlerini kullanan herkes, aşağıdaki kuralları kabul etmiş sayılır:<br />
+                        {getContent('kulsoz_description')}
                     </p>
-                    <p>
-                        - Kullanıcılar, hizmetleri yasal ve etik kurallar dahilinde kullanmalıdır.<br />
-                        - Hizmetlerin ödeme ve abonelik detayları, işbu sözleşme kapsamında belirtilmiştir.<br />
-                        - Hizmetlerin ticari kullanımı, özel izne tabidir ve aksi durumlarda hukuki yaptırımlar uygulanabilir.</p>
+
                 </div>
             </div>
 
@@ -150,17 +166,12 @@ const YasalContent = () => {
                     highlighted === "ucretler-ve-limitler" ? "bg-slate-300" : "bg-white"
                 )}>
                     <p className="mb-3">
-                        Ttelekominikasyon hizmetlerinin fiyatlandırması ve kullanım limitleri aşağıdaki gibidir:<br />
-                    </p>
-                    <p>
-                        - Abonelik paketleri ve hizmet ücretleri, dönemsel olarak güncellenebilir.<br />
-                        - Kullanım limitleri, seçilen paketlere ve hizmet türüne bağlı olarak değişebilir.<br />
-                        - Ekstra kullanım durumlarında aşım ücretleri uygulanabilir ve bunlar abonelik planlarında belirtilir.
+                        {getContent('ucli_description')}
                     </p>
                 </div>
             </div>
             <div className="mb-8 p-3 text-sm sm:text-md md:text-lg rounded-2xl transition-all duration-500  font-medium bg-white w-fit">
-                <p>Bu politikalarla ilgili detaylı bilgi almak için müşteri hizmetlerimizle iletişime geçebilirsiniz.</p>
+                <p>{getContent('bilgilendirme')}</p>
             </div>
 
         </div>

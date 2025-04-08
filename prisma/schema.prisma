@@ -54,3 +54,15 @@ model Packets {
   price          Int
 }
 
+model Yasal {
+  id      Int    @id @default(autoincrement())
+  key     String @unique
+  content String
+}
+
+model SiteInfo {
+  id      Int    @id @default(autoincrement())
+  key     String @unique
+  content String
+}
+
