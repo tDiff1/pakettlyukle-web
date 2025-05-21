@@ -54,7 +54,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate image size (5MB limit)
+    // Validate image size (4MB limit)
     if (image.size > 4 * 1024 * 1024) {
       return NextResponse.json(
         { message: "Resim boyutu 4MB'ı aşamaz" },

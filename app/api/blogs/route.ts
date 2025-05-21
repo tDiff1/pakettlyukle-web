@@ -59,9 +59,9 @@ export async function POST(req: Request) {
           { status: 400 }
         );
       }
-      if (image.size > 5 * 1024 * 1024) {
+      if (image.size > 4 * 1024 * 1024) {
         return NextResponse.json(
-          { error: "Resim boyutu 5MB'ı aşamaz" },
+          { error: "Resim boyutu 4MB'ı aşamaz" },
           { status: 400 }
         );
       }

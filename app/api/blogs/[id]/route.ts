@@ -40,7 +40,7 @@ export async function PUT(
 
       if (imageFile.size > 4 * 1024 * 1024) {
         return NextResponse.json(
-          { error: "Resim boyutu 5MB'ı aşamaz" },
+          { error: "Resim boyutu 4MB'ı aşamaz" },
           { status: 400 }
         );
       }

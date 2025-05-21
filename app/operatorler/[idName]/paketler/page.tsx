@@ -85,7 +85,7 @@ const PacketList = () => {
             {packets.map((packet) => (
               <Link
                 key={packet.packet_title}
-                href={`operatorler/${idName}/${getPacketSlug(
+                href={`/operatorler/${idName}/${getPacketSlug(
                   packet.packet_title
                 )}`}
                 className="bg-[#e5e5e6] p-4 rounded-xl flex flex-col justify-between hover:scale-105 transform transition-transform duration-300 min-h-[300px]"
