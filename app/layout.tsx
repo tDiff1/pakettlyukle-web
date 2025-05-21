@@ -2,6 +2,7 @@ import { Noto_Sans } from "next/font/google";
 import "./globals.css";
 import LayoutWrapper from "@/components/LayoutWrapper";
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Analytics } from "@vercel/analytics/next"
 import { FaviconUpdater } from "@/components/favicon-updater";
 
 const notoSans = Noto_Sans({
@@ -58,6 +59,7 @@ export default function RootLayout({
       >
         <LayoutWrapper>{children}</LayoutWrapper>
         <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );

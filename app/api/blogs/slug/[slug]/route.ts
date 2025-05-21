@@ -3,6 +3,8 @@ import { PrismaClient } from "@prisma/client";
 import slugify from "slugify";
 const prisma = new PrismaClient();
 
+
+
 export async function GET(req: Request, context: { params: Promise<{ slug: string }> }) {
   const params = await context.params;
   const { slug } = params;
