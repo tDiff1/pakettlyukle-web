@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Home {
+  id      Int    @id @default(autoincrement())
+  key     String @unique
+  content String @db.Text
+}
+
+model Faq {
+  id       Int    @id @default(autoincrement())
+  key      String @unique
+  question String @db.Text
+  answer   String @db.Text
+}
+
+model Operators {
+  id          Int    @id @default(autoincrement())
+  key         String @unique
+  name        String
+  idName      String @unique
+  imageID     String @unique
+  CompanyCode Int
+  aktiflik    Int
+}
+
+model Header {
+  id      Int    @id @default(autoincrement())
+  key     String @unique
+  content String
+}
+
+model Footer {
+  id      Int    @id @default(autoincrement())
+  key     String @unique
+  content String
+}
+
+model Packets {
+  id             Int    @id @default(autoincrement())
+  key            String @db.LongText
+  packet_title   String @db.LongText
+  packet_content String @db.LongText
+  heryone_dk     Int
+  heryone_sms    Int
+  heryone_int    Int
+  price          Int
+}
+
+model Yasal {
+  id      Int     @id @default(autoincrement())
+  key     String  @unique
+  content String? @db.Text
+}
+
+model SiteInfo {
+  id      Int     @id @default(autoincrement())
+  key     String  @unique
+  content String? @db.Text
+}
+
+model AdminInfo {
+  id        Int     @id @default(autoincrement())
+  user_name String
+  key       String  @unique
+  phone     String? @db.VarChar(15)
+}
+
+model OtpCode {
+  id        Int       @id @default(autoincrement())
+  phone     String    @unique(map: "phone") @db.VarChar(20)
+  code      String    @db.VarChar(10)
+  createdAt DateTime? @default(now()) @db.DateTime(0)
+}
+
+model Payment {
+  id             Int      @id @default(autoincrement())
+  musteriNo      String
+  operator       String
+  paket          String
+  paketid        Int
+  tutar          Float
+  saat           String
+  tarih          String
+  onayDurumu     Boolean
+  gonderimDurumu String
+  createdAt      DateTime @default(now())
+}
+
+model Blog {
+  id               Int      @id @default(autoincrement())
+  blog_title       String   @db.LongText
+  blog_description String   @db.LongText
+  blog_imageUrl    String?  @db.LongText
+  createdAt        DateTime @default(now())
+}
+
+model SmsRecipient {
+  id        Int      @id @default(autoincrement())
+  phone     String   @unique
+  createdAt DateTime @default(now())
+}
