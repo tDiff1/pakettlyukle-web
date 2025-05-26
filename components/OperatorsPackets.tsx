@@ -567,11 +567,7 @@ const OperatorsPackets = () => {
                           index={index}
                         >
                           {(provided, snapshot) => {
-                            const transformY =
-                              provided.draggableProps.style?.transform?.match(
-                                /translate\((.*?), (.*?)\)/
-                              )?.[2] || "0px";
-
+                            
                             return (
                               <div
                                 ref={provided.innerRef}
