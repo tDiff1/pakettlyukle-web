@@ -48,7 +48,7 @@ const AdminPage = () => {
 
     if (authToken && authTimestamp) {
       const timeElapsed = Date.now() - parseInt(authTimestamp, 10);
-      const thirtyMinutes = 30 * 60 * 1000;
+      const thirtyMinutes = 120 * 60 * 1000;
       if (timeElapsed < thirtyMinutes) {
         setIsAuthenticated(true);
         const user = localStorage.getItem("authenticatedUser");
@@ -181,7 +181,7 @@ const AdminPage = () => {
         localStorage.setItem("authToken", result.token);
         localStorage.setItem("authTimestamp", Date.now().toString());
         localStorage.setItem("authenticatedUser", authenticatedUser || "");
-        setTimeLeft(30 * 60 * 1000); // Set timer to 30 minutes
+        setTimeLeft(120 * 60 * 1000); // Set timer to 30 minutes
       } else {
         setError(result.error || "Hatalı OTP kodu!");
       }
@@ -278,7 +278,7 @@ const AdminPage = () => {
       </div>
     );
   }
-  
+
   return (
     <div className="flex items-center justify-center h-screen bg-gray-100">
       {!isOtpSent ? (

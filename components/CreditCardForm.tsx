@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 type Packet = {
   id: number;
@@ -12,35 +12,42 @@ type Packet = {
   price: number;
 };
 
-export default function CreditCardForm({ phone, selectedPacket }: { phone: string; selectedPacket: Packet }) {
+export default function CreditCardForm({
+  phone,
+  selectedPacket,
+}: {
+  phone: string;
+  selectedPacket: Packet;
+}) {
   const [formData, setFormData] = useState({
-    cardNumber: '',
-    cardHolder: '',
-    expiry: '',
-    cvv: '',
+    cardNumber: "",
+    cardHolder: "",
+    expiry: "",
+    cvv: "",
   });
 
   const [errors, setErrors] = useState({
-    cardNumber: '',
-    cardHolder: '',
-    expiry: '',
-    cvv: '',
+    cardNumber: "",
+    cardHolder: "",
+    expiry: "",
+    cvv: "",
   });
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     let formattedValue = value;
 
-    if (name === 'expiry') {
-      const cleanedValue = value.replace(/\D/g, '');
+    if (name === "expiry") {
+      const cleanedValue = value.replace(/\D/g, "");
       if (cleanedValue.length === 0) {
-        formattedValue = '';
+        formattedValue = "";
       } else {
         const month = cleanedValue.slice(0, 2);
         const year = cleanedValue.slice(2, 4);
         formattedValue = month;
         if (month.length === 2 && year.length > 0) {
-          formattedValue += '/' + year;
+          formattedValue += "/" + year;
         }
         formattedValue = formattedValue.slice(0, 5);
       }
@@ -48,31 +55,43 @@ export default function CreditCardForm({ phone, selectedPacket }: { phone: strin
 
     setFormData({ ...formData, [name]: formattedValue });
 
-    let error = '';
-    if (name === 'cardNumber' && value.length > 0 && !/^\d{0,16}$/.test(value.replace(/\s/g, ''))) {
-      error = 'Geçerli bir kart numarası girin (16 rakam)';
-    } else if (name === 'cardHolder' && value.length > 0 && !/^[a-zA-ZğüşöçıİĞÜŞÖÇ\s]*$/.test(value)) {
-      error = 'Geçerli bir isim girin';
-    } else if (name === 'expiry' && value.length > 0 && !/^(0[1-9]|1[0-2])\/(\d{2})$/.test(value)) {
-      error = 'Geçerli bir tarih girin (MM/YY)';
-    } else if (name === 'cvv' && value.length > 0 && !/^\d{3,4}$/.test(value)) {
-      error = 'Geçerli bir CVV girin (3-4 rakam)';
+    let error = "";
+    if (
+      name === "cardNumber" &&
+      value.length > 0 &&
+      !/^\d{0,16}$/.test(value.replace(/\s/g, ""))
+    ) {
+      error = "Geçerli bir kart numarası girin (16 rakam)";
+    } else if (
+      name === "cardHolder" &&
+      value.length > 0 &&
+      !/^[a-zA-ZğüşöçıİĞÜŞÖÇ\s]*$/.test(value)
+    ) {
+      error = "Geçerli bir isim girin";
+    } else if (
+      name === "expiry" &&
+      value.length > 0 &&
+      !/^(0[1-9]|1[0-2])\/(\d{2})$/.test(value)
+    ) {
+      error = "Geçerli bir tarih girin (MM/YY)";
+    } else if (name === "cvv" && value.length > 0 && !/^\d{3,4}$/.test(value)) {
+      error = "Geçerli bir CVV girin (3-4 rakam)";
     }
 
     setErrors({ ...errors, [name]: error });
   };
 
   const handleCardNumberInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\D/g, '');
+    let value = e.target.value.replace(/\D/g, "");
     value = value
-      .replace(/(\d{4})/g, '$1 ')
+      .replace(/(\d{4})/g, "$1 ")
       .trim()
       .slice(0, 19);
     setFormData({ ...formData, cardNumber: value });
 
-    let error = '';
-    if (value.length > 0 && !/^\d{0,16}$/.test(value.replace(/\s/g, ''))) {
-      error = 'Geçerli bir kart numarası girin (16 rakam)';
+    let error = "";
+    if (value.length > 0 && !/^\d{0,16}$/.test(value.replace(/\s/g, ""))) {
+      error = "Geçerli bir kart numarası girin (16 rakam)";
     }
     setErrors({ ...errors, cardNumber: error });
   };
@@ -81,9 +100,15 @@ export default function CreditCardForm({ phone, selectedPacket }: { phone: strin
     e.preventDefault();
 
     const newErrors = {
-      cardNumber: formData.cardNumber.replace(/\s/g, "").length !== 16 ? "Kart numarası 16 rakam olmalı" : "",
-      cardHolder: formData.cardHolder.length === 0 ? "Kart sahibi adı gerekli" : "",
-      expiry: !/^(0[1-9]|1[0-2])\/(\d{2})$/.test(formData.expiry) ? "Geçerli bir tarih girin (MM/YY)" : "",
+      cardNumber:
+        formData.cardNumber.replace(/\s/g, "").length !== 16
+          ? "Kart numarası 16 rakam olmalı"
+          : "",
+      cardHolder:
+        formData.cardHolder.length === 0 ? "Kart sahibi adı gerekli" : "",
+      expiry: !/^(0[1-9]|1[0-2])\/(\d{2})$/.test(formData.expiry)
+        ? "Geçerli bir tarih girin (MM/YY)"
+        : "",
       cvv: !/^\d{3,4}$/.test(formData.cvv) ? "Geçerli bir CVV girin" : "",
     };
 
@@ -97,8 +122,11 @@ export default function CreditCardForm({ phone, selectedPacket }: { phone: strin
         paket: selectedPacket.packet_title,
         paketid: selectedPacket.id,
         tutar: selectedPacket.price,
-        saat: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        tarih: now.toISOString().split('T')[0],
+        saat: now.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        tarih: now.toISOString().split("T")[0],
         onayDurumu: true,
         gonderimDurumu: "Beklemede",
       };
@@ -109,12 +137,15 @@ export default function CreditCardForm({ phone, selectedPacket }: { phone: strin
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
+        
 
         if (res.ok) {
           alert("Ödeme başarıyla alındı.");
         } else {
           const errorText = await res.text();
-          console.error(`Payment failed! Status: ${res.status}, Message: ${errorText}`);
+          console.error(
+            `Payment failed! Status: ${res.status}, Message: ${errorText}`
+          );
           alert("Sunucu hatası oluştu.");
         }
       } catch (err) {
@@ -123,6 +154,8 @@ export default function CreditCardForm({ phone, selectedPacket }: { phone: strin
       }
     }
   };
+
+
 
   return (
     <motion.div
@@ -136,22 +169,27 @@ export default function CreditCardForm({ phone, selectedPacket }: { phone: strin
       </h1>
       <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-4 rounded-xl mb-6 text-white shadow-md">
         <div className="text-lg font-mono tracking-wider">
-          {formData.cardNumber || '**** **** **** ****'}
+          {formData.cardNumber || "**** **** **** ****"}
         </div>
         <div className="flex justify-between mt-4">
           <div>
             <div className="text-sm opacity-80">Kart Sahibi</div>
-            <div className="font-medium">{formData.cardHolder || 'Ad Soyad'}</div>
+            <div className="font-medium">
+              {formData.cardHolder || "Ad Soyad"}
+            </div>
           </div>
           <div>
             <div className="text-sm opacity-80">Son Kullanım</div>
-            <div className="font-medium">{formData.expiry || 'MM/YY'}</div>
+            <div className="font-medium">{formData.expiry || "MM/YY"}</div>
           </div>
         </div>
       </div>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="cardNumber"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Kart Numarası
           </label>
           <input
@@ -178,7 +216,10 @@ export default function CreditCardForm({ phone, selectedPacket }: { phone: strin
           </AnimatePresence>
         </div>
         <div>
-          <label htmlFor="cardHolder" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="cardHolder"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Kart Sahibi
           </label>
           <input
@@ -205,7 +246,10 @@ export default function CreditCardForm({ phone, selectedPacket }: { phone: strin
         </div>
         <div className="flex space-x-4">
           <div className="flex-1">
-            <label htmlFor="expiry" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="expiry"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Son Kullanım Tarihi
             </label>
             <input
@@ -232,7 +276,10 @@ export default function CreditCardForm({ phone, selectedPacket }: { phone: strin
             </AnimatePresence>
           </div>
           <div className="flex-1">
-            <label htmlFor="cvv" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="cvv"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               CVV
             </label>
             <input

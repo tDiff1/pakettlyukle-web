@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@dnd-kit/modifiers": "^9.0.0",
+    "@hello-pangea/dnd": "^18.0.1",
     "@mdx-js/loader": "^3.1.0",
     "@mdx-js/react": "^3.1.0",
     "@netgsm/sms": "^1.1.10",

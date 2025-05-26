@@ -15,6 +15,7 @@ type Packet = {
   heryone_sms: number;
   heryone_int: number;
   price: number;
+  sort_order: number;
 };
 
 type Operator = {
@@ -82,7 +83,7 @@ const PacketList = () => {
           <p className="text-center">Bu operatör için paket bulunamadı.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {packets.map((packet) => (
+            {packets.sort((a, b) => a.sort_order - b.sort_order).map((packet) => (
               <Link
                 key={packet.packet_title}
                 href={`/operatorler/${idName}/${getPacketSlug(

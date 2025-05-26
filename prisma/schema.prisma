@@ -51,6 +51,7 @@ model Packets {
   heryone_sms    Int
   heryone_int    Int
   price          Int
+  sort_order Int    @default(0)
 }
 
 model Yasal {

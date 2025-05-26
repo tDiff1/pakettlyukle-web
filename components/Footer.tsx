@@ -86,23 +86,23 @@ const Footer = () => {
     return <div></div>;
   }
   return (
-<footer className="bg-[#a9a9a9] text-black py-8 mt-8 px-6 md:px-16 lg:px-28 no-select min-h-[300px]">
+<footer className="bg-[#a9a9a9] text-black py-8 mt-8 px-6 md:px-16 lg:px-28 no-select min-h-[200px]">
   <DevMessage />
   <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 text-center md:text-left">
     
     {/* Logo ve Ödeme Yöntemleri */}
     <div className="flex flex-col items-center md:items-start">
       <Image
-        className="rounded-3xl"
-        src={logoPath}
-        width={140}
-        height={140}
-        alt="logo"
-        priority
+              className="rounded-2xl w-16 h-16 sm:w-20 sm:h-20 lg:w-28 lg:h-28"
+              src={logoPath}
+              width={128}
+              height={128}
+              alt="logo"
+              priority
       />
       <div className="flex space-x-4 mt-3">
-        <Image src="https://9p0znkmu3n4ej0xg.public.blob.vercel-storage.com/pakettlyukle/other-pic/visa.png" width={64} height={64} alt="Visa" />
-        <Image src="https://9p0znkmu3n4ej0xg.public.blob.vercel-storage.com/pakettlyukle/other-pic/mastercard.png" width={64} height={64} alt="Mastercard" />
+        <Image src="https://9p0znkmu3n4ej0xg.public.blob.vercel-storage.com/pakettlyukle/other-pic/visa.png" width={50} height={50} alt="Visa" />
+        <Image src="https://9p0znkmu3n4ej0xg.public.blob.vercel-storage.com/pakettlyukle/other-pic/mastercard.png" width={50} height={50} alt="Mastercard" />
       </div>
       <p className="mt-3 text-sm min-h-[20px]">
         © 2025 Tüm Hakları Saklıdır.

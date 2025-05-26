@@ -11,6 +11,8 @@ interface Blog {
   blog_imageUrl?: string;
 }
 
+
+
 const BlogDetail = () => {
   const { slug } = useParams();
   const router = useRouter();
@@ -93,6 +95,7 @@ const BlogDetail = () => {
               width={800}
               height={500}
               className="rounded-2xl shadow-md object-cover w-full h-auto max-h-[400px]"
+              priority
             />
           </div>
         )}

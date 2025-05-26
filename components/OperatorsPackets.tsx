@@ -1,4 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+} from "@hello-pangea/dnd";
 
 type Operator = {
   id: number;
@@ -15,12 +21,14 @@ type Packet = {
   heryone_sms: number;
   heryone_int: number;
   price: number;
+  sort_order: number;
 };
 
 const OperatorsPackets = () => {
   const [operators, setOperators] = useState<Operator[]>([]);
   const [selectedOperator, setSelectedOperator] = useState<string>("");
   const [packets, setPackets] = useState<Packet[]>([]);
+  const [originalPackets, setOriginalPackets] = useState<Packet[]>([]);
   const [selectedPacket, setSelectedPacket] = useState<Packet | null>(null);
   const [formData, setFormData] = useState<Partial<Packet>>({
     heryone_dk: 0,
@@ -30,8 +38,11 @@ const OperatorsPackets = () => {
   const [isAddingNewPacket, setIsAddingNewPacket] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isTlPackage, setIsTlPackage] = useState(false);
-  // Operatörleri getir
+  const [isListView, setIsListView] = useState(false);
+  const [hasOrderChanged, setHasOrderChanged] = useState(false);
+
   useEffect(() => {
     const fetchOperators = async () => {
       setLoading(true);
@@ -50,10 +61,10 @@ const OperatorsPackets = () => {
     fetchOperators();
   }, []);
 
-  // Seçilen operatörün paketlerini getir
   useEffect(() => {
     if (!selectedOperator) {
       setPackets([]);
+      setOriginalPackets([]);
       return;
     }
 
@@ -64,13 +75,16 @@ const OperatorsPackets = () => {
         const res = await fetch(`/api/table/packets?key=${selectedOperator}`);
         if (!res.ok) throw new Error("Paketler alınamadı");
         const data = await res.json();
-        const filtered = data.filter(
-          (packet: Packet) => packet.key === selectedOperator
-        );
+        const filtered = data
+          .filter((packet: Packet) => packet.key === selectedOperator)
+          .sort((a: Packet, b: Packet) => a.sort_order - b.sort_order);
         setPackets(filtered);
+        setOriginalPackets(filtered);
+        setHasOrderChanged(false);
       } catch {
         setError("Paketler yüklenemedi");
         setPackets([]);
+        setOriginalPackets([]);
       } finally {
         setLoading(false);
       }
@@ -79,12 +93,62 @@ const OperatorsPackets = () => {
     fetchPackets();
   }, [selectedOperator]);
 
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination) return;
+
+    const reorderedPackets = Array.from(packets);
+    const [movedPacket] = reorderedPackets.splice(result.source.index, 1);
+    reorderedPackets.splice(result.destination.index, 0, movedPacket);
+
+    setPackets(reorderedPackets);
+    const orderChanged = reorderedPackets.some(
+      (packet, index) => packet.id !== originalPackets[index]?.id
+    );
+    setHasOrderChanged(orderChanged);
+  };
+
+  const handleSaveOrder = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const updatedOrders = packets.map((packet, index) => ({
+        id: packet.id,
+        sort_order: index,
+      }));
+
+      const res = await fetch("/api/table/packets/reorder", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ packets: updatedOrders }),
+      });
+
+      if (!res.ok) throw new Error("Sıralama güncellenemedi");
+      setOriginalPackets(packets);
+      setHasOrderChanged(false);
+      setSuccessMessage("Sıralama başarıyla güncellendi");
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (error: unknown) {
+      setError(
+        error instanceof Error ? error.message : "Sıralama güncellenemedi"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleOperatorChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedOperator(e.target.value);
     setError(null);
+    setSuccessMessage(null);
     setPackets([]);
+    setOriginalPackets([]);
     setSelectedPacket(null);
     setIsAddingNewPacket(false);
+    setIsListView(false);
+    setHasOrderChanged(false);
   };
 
   const handlePacketClick = (packet: Packet) => {
@@ -97,6 +161,10 @@ const OperatorsPackets = () => {
     setSelectedPacket(null);
     setFormData({ key: selectedOperator });
     setIsAddingNewPacket(true);
+  };
+
+  const handleListViewToggle = () => {
+    setIsListView((prev) => !prev);
   };
 
   const handleFormChange = (
@@ -114,9 +182,9 @@ const OperatorsPackets = () => {
 
     if (
       !confirm(
-        `"${
+        `${
           selectedPacket.packet_title || selectedPacket.id
-        }" paketi silinecek. Emin misiniz?`
+        } paketi silinecek. Emin misiniz?`
       )
     ) {
       return;
@@ -130,41 +198,22 @@ const OperatorsPackets = () => {
         method: "DELETE",
       });
 
-      if (!res.ok) {
-        let errorData;
-        try {
-          errorData = await res.json();
-        } catch {
-          errorData = {
-            error: `Sunucu yanıtı geçersiz: ${res.status} ${res.statusText}`,
-          };
-        }
-        console.error(
-          "Sunucu hata yanıtı:",
-          JSON.stringify(errorData, null, 2)
-        );
-        throw new Error(
-          errorData.error ||
-            errorData.message ||
-            `Silme başarısız: ${res.status}`
-        );
-      }
-
-      console.log(`Paket silindi: ${selectedPacket.id}`);
-      setPackets((prevPackets) =>
-        prevPackets.filter((packet) => packet.id !== selectedPacket.id)
+      if (!res.ok) throw new Error("Silme başarısız");
+      const updatedPackets = packets.filter(
+        (packet) => packet.id !== selectedPacket.id
       );
+      setPackets(updatedPackets);
+      setOriginalPackets(updatedPackets);
       setSelectedPacket(null);
       setFormData({});
       setError(null);
+      setSuccessMessage("Paket başarıyla silindi");
+      setTimeout(() => setSuccessMessage(null), 3000);
+      setHasOrderChanged(false);
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error("Paket silinemedi:", error);
-        setError(error.message || "Paket silinemedi.");
-      } else {
-        console.error("Paket silinemedi:", error);
-        setError("Bilinmeyen bir hata oluştu.");
-      }
+      setError(
+        error instanceof Error ? error.message : "Bilinmeyen bir hata oluştu"
+      );
     } finally {
       setLoading(false);
     }
@@ -176,17 +225,17 @@ const OperatorsPackets = () => {
     if (checked) {
       setFormData((prev) => ({
         ...prev,
-        dk: 0,
-        sms: 0,
-        internet: 0,
+        heryone_dk: 0,
+        heryone_sms: 0,
+        heryone_int: 0,
       }));
     }
   };
+
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (isAddingNewPacket) {
-      // Yeni paket ekleme
       if (!selectedOperator) {
         setError("Lütfen bir operatör seçin.");
         return;
@@ -200,6 +249,7 @@ const OperatorsPackets = () => {
         heryone_sms: Math.floor(Number(formData.heryone_sms) || 0),
         heryone_int: Math.floor(Number(formData.heryone_int) || 0),
         price: Math.floor(Number(formData.price) || 0),
+        sort_order: packets.length,
       };
 
       try {
@@ -211,44 +261,21 @@ const OperatorsPackets = () => {
           body: JSON.stringify(formattedData),
         });
 
-        if (!res.ok) {
-          let errorData;
-          try {
-            errorData = await res.json();
-          } catch {
-            errorData = {
-              error: `Sunucu yanıtı geçersiz: ${res.status} ${res.statusText}`,
-            };
-          }
-          console.error(
-            "Sunucu hata yanıtı:",
-            JSON.stringify(errorData, null, 2)
-          );
-          throw new Error(
-            errorData.error ||
-              errorData.message ||
-              `Ekleme başarısız: ${res.status}`
-          );
-        }
-
+        if (!res.ok) throw new Error("Ekleme başarısız");
         const newPacket = await res.json();
-        console.log("Eklenen paket:", newPacket);
-
         setPackets((prevPackets) => [...prevPackets, newPacket]);
+        setOriginalPackets((prevPackets) => [...prevPackets, newPacket]);
         setIsAddingNewPacket(false);
         setFormData({});
         setError(null);
+        setSuccessMessage("Paket başarıyla eklendi");
+        setTimeout(() => setSuccessMessage(null), 3000);
       } catch (error: unknown) {
-        if (error instanceof Error) {
-          console.error("Paket eklenemedi:", error);
-          setError(error.message || "Paket eklenemedi.");
-        } else {
-          console.error("Paket eklenemedi:", error);
-          setError("Bilinmeyen bir hata oluştu.");
-        }
+        setError(
+          error instanceof Error ? error.message : "Bilinmeyen bir hata oluştu"
+        );
       }
     } else if (selectedPacket) {
-      // Mevcut paketi düzenleme
       const formattedData: Partial<Packet> = {};
       if (formData.key !== selectedPacket.key)
         formattedData.key = selectedOperator;
@@ -274,8 +301,6 @@ const OperatorsPackets = () => {
         return;
       }
 
-      console.log("Güncellenen veri:", JSON.stringify(formattedData, null, 2));
-
       try {
         const res = await fetch(`/api/table/packets/${selectedPacket.id}`, {
           method: "PATCH",
@@ -285,55 +310,32 @@ const OperatorsPackets = () => {
           body: JSON.stringify(formattedData),
         });
 
-        if (!res.ok) {
-          let errorData;
-          try {
-            errorData = await res.json();
-          } catch {
-            errorData = {
-              error: `Sunucu yanıtı geçersiz: ${res.status} ${res.statusText}`,
-            };
-          }
-          console.error(
-            "Sunucu hata yanıtı:",
-            JSON.stringify(errorData, null, 2)
-          );
-          throw new Error(
-            errorData.error ||
-              errorData.message ||
-              `Güncelleme başarısız: ${res.status}`
-          );
-        }
-
+        if (!res.ok) throw new Error("Güncelleme başarısız");
         const updatedPacket = await res.json();
-        console.log("Güncellenmiş paket:", updatedPacket);
-
-        setPackets((prevPackets) =>
-          prevPackets.map((packet) =>
-            packet.id === updatedPacket.id ? updatedPacket : packet
-          )
+        const updatedPackets = packets.map((packet) =>
+          packet.id === updatedPacket.id ? updatedPacket : packet
         );
-
+        setPackets(updatedPackets);
+        setOriginalPackets(updatedPackets);
         setSelectedPacket(null);
         setFormData({});
         setError(null);
+        setSuccessMessage("Paket başarıyla güncellendi");
+        setTimeout(() => setSuccessMessage(null), 3000);
       } catch (error: unknown) {
-        if (error instanceof Error) {
-          console.error("Paket güncellenemedi:", error);
-          setError(error.message || "Paket güncellenemedi.");
-        } else {
-          console.error("Paket güncellenemedi:", error);
-          setError("Bilinmeyen bir hata oluştu.");
-        }
+        setError(
+          error instanceof Error ? error.message : "Bilinmeyen bir hata oluştu"
+        );
       }
     }
   };
+
+  const memoizedPackets = useMemo(() => packets, [packets]);
 
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6 bg-gray-50 rounded-2xl shadow-lg">
       <h2 className="text-3xl font-bold text-gray-800">Operatör Paketleri</h2>
 
-      {/* Operatör Seçimi */}
       <div>
         <label
           htmlFor="operator"
@@ -357,6 +359,9 @@ const OperatorsPackets = () => {
       </div>
 
       {error && <p className="text-red-500 text-sm mt-2">Hata: {error}</p>}
+      {successMessage && (
+        <p className="text-green-500 text-sm mt-2">{successMessage}</p>
+      )}
 
       {loading && !error && (
         <div className="flex items-center gap-2 text-indigo-600 text-sm">
@@ -379,19 +384,31 @@ const OperatorsPackets = () => {
         </div>
       )}
 
-      {/* Yeni Paket Ekle Butonu */}
       {selectedOperator && !selectedPacket && !isAddingNewPacket && (
-        <div className="mt-4">
+        <div className="mt-4 flex gap-4">
           <button
             onClick={handleNewPacketClick}
             className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
           >
             Yeni Paket Ekle
           </button>
+          <button
+            onClick={handleListViewToggle}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            {isListView ? "Grid Görünüm" : "Listele"}
+          </button>
+          {isListView && hasOrderChanged && (
+            <button
+              onClick={handleSaveOrder}
+              className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+            >
+              Kaydet
+            </button>
+          )}
         </div>
       )}
 
-      {/* Paket Güncelleme veya Ekleme Formu */}
       {(selectedPacket || isAddingNewPacket) && (
         <form
           onSubmit={handleFormSubmit}
@@ -401,7 +418,6 @@ const OperatorsPackets = () => {
             <h3 className="text-xl font-bold text-gray-800">
               {isAddingNewPacket ? "Yeni Paket Ekle" : "Paketi Güncelle"}
             </h3>
-
             <label className="inline-flex items-center gap-2 cursor-pointer select-none text-sm font-medium text-gray-700">
               <input
                 type="checkbox"
@@ -425,7 +441,6 @@ const OperatorsPackets = () => {
               className="w-full p-2 border rounded"
             />
           </div>
-
           <div>
             <label className="block mb-1 font-medium text-sm text-gray-700">
               Paket İçeriği
@@ -438,7 +453,6 @@ const OperatorsPackets = () => {
               className="w-full p-2 border rounded resize-y min-h-[100px]"
             />
           </div>
-
           <div>
             <label className="block mb-1 font-medium text-sm text-gray-700">
               Heryöne Dakika
@@ -452,7 +466,6 @@ const OperatorsPackets = () => {
               className="w-full p-2 border rounded bg-white disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
             />
           </div>
-
           <div>
             <label className="block mb-1 font-medium text-sm text-gray-700">
               Heryöne SMS
@@ -467,7 +480,6 @@ const OperatorsPackets = () => {
               className="w-full p-2 border rounded bg-white disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
             />
           </div>
-
           <div>
             <label className="block mb-1 font-medium text-sm text-gray-700">
               Heryöne İnternet (GB)
@@ -482,7 +494,6 @@ const OperatorsPackets = () => {
               className="w-full p-2 border rounded bg-white disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
             />
           </div>
-
           <div>
             <label className="block mb-1 font-medium text-sm text-gray-700">
               Fiyat (TL)
@@ -496,7 +507,6 @@ const OperatorsPackets = () => {
               className="w-full p-2 border rounded"
             />
           </div>
-
           <div className="flex gap-4">
             <button
               type="submit"
@@ -511,7 +521,7 @@ const OperatorsPackets = () => {
                 setIsAddingNewPacket(false);
                 setFormData({});
               }}
-              className="bg-gray-400 text-white px-4지지 py-2 rounded hover:bg-gray-500"
+              className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
             >
               İptal
             </button>
@@ -528,58 +538,152 @@ const OperatorsPackets = () => {
         </form>
       )}
 
-      {/* Paket Listesi */}
       {!loading &&
         selectedOperator &&
-        packets.length > 0 &&
+        memoizedPackets.length > 0 &&
         !selectedPacket &&
         !isAddingNewPacket && (
-          <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {packets.map((packet) => (
-              <li
-                key={packet.id}
-                onClick={() => handlePacketClick(packet)}
-                className="p-4 bg-[#e5e5e6] rounded-3xl shadow-sm hover:bg-gray-100 hover:shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 cursor-pointer flex flex-col justify-between"
-              >
-                <h3 className="font-semibold text-lg sm:text-xl lg:text-2xl text-center text-gray-800">
-                  {packet.packet_title}
-                </h3>
-                <div className="text-center mt-2">
-                  <p className="text-xs sm:text-sm lg:text-base text-gray-600">
-                    {packet.packet_content}
-                  </p>
-                </div>
-                <div className="text-center mt-2">
-                  {(packet.heryone_dk !== 0 ||
-                    packet.heryone_sms !== 0 ||
-                    packet.heryone_int !== 0) && (
-                    <div>
-                      <p className="text-xs sm:text-sm lg:text-base text-gray-600">
-                        Heryöne {packet.heryone_dk} Dakika
-                      </p>
-                      <p className="text-xs sm:text-sm lg:text-base text-gray-600">
-                        Heryöne {packet.heryone_sms} SMS
-                      </p>
-                      <p className="text-xs sm:text-sm lg:text-base text-gray-600">
-                        Heryöne {packet.heryone_int} GB İnternet
-                      </p>
+          <>
+            {isListView ? (
+              <DragDropContext onDragEnd={handleDragEnd}>
+                <Droppable droppableId="packets" direction="vertical">
+                  {(provided, snapshot) => (
+                    <div
+                      {...provided.droppableProps}
+                      ref={provided.innerRef}
+                      className="overflow-y-auto max-h-[600px] w-full max-w-full"
+                      style={{
+                        background: snapshot.isDraggingOver
+                          ? "#f0f0ff"
+                          : "transparent",
+                        padding: "0 16px",
+                        position: "relative",
+                      }}
+                    >
+                      {memoizedPackets.map((packet, index) => (
+                        <Draggable
+                          key={packet.id}
+                          draggableId={packet.id.toString()}
+                          index={index}
+                        >
+                          {(provided, snapshot) => {
+                            const transformY =
+                              provided.draggableProps.style?.transform?.match(
+                                /translate\((.*?), (.*?)\)/
+                              )?.[2] || "0px";
+
+                            return (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                className={`p-4 bg-[#e5e5e6] rounded-3xl shadow-sm hover:bg-gray-100 flex flex-row items-center gap-4 transition-all duration-200 mb-4 ${
+                                  snapshot.isDragging
+                                    ? "border-2 border-indigo-500 opacity-90 shadow-xl z-50"
+                                    : "border-2 border-transparent"
+                                }`}
+                                style={{
+                                  ...provided.draggableProps.style,
+                                  transform: snapshot.isDragging
+                                    ? `translate(0px, ${
+                                        provided.draggableProps.style?.transform?.match(
+                                          /translate\((.*?), (.*?)\)/
+                                        )?.[2] || "0px"
+                                      })`
+                                    : provided.draggableProps.style?.transform,
+                                  left: "16%", // Force horizontal position
+                                  cursor: snapshot.isDragging
+                                    ? "grabbing"
+                                    : "grab",
+                                  boxSizing: "border-box",
+                                  zIndex: snapshot.isDragging ? 1000 : "auto",
+                                }}
+                              >
+                                <span className="text-lg font-bold text-gray-800 w-8">
+                                  {index + 1}
+                                </span>
+                                <div className="flex-1">
+                                  <h3 className="font-semibold text-lg sm:text-xl lg:text-2xl text-center text-gray-800">
+                                    {packet.packet_title}
+                                  </h3>
+                                  <div className="text-center mt-2 text-gray-600 text-sm">
+                                    {packet.packet_content}
+                                  </div>
+                                  <div className="text-center mt-2 text-gray-600 text-sm">
+                                    {(packet.heryone_dk !== 0 ||
+                                      packet.heryone_sms !== 0 ||
+                                      packet.heryone_int !== 0) && (
+                                      <div>
+                                        <p>Heryöne {packet.heryone_dk} DK</p>
+                                        <p>Heryöne {packet.heryone_sms} SMS</p>
+                                        <p>Heryöne {packet.heryone_int} GB</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="mt-4 flex justify-center">
+                                    <button className="w-full max-w-[150px] p-3 bg-[#fefeff] hover:bg-[#e5e5e6] text-gray-600 font-bold rounded-3xl">
+                                      {packet.price} TL
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          }}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
                     </div>
                   )}
-                </div>
-                <div className="mt-4 flex justify-center items-center text-xl w-full">
-                  <button className="w-full max-w-[150px] p-3 bg-[#fefeff] hover:bg-[#e5e5e6] text-gray-600 font-bold text-center rounded-3xl">
-                    {packet.price} TL
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
+                </Droppable>
+              </DragDropContext>
+            ) : (
+              <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {memoizedPackets.map((packet) => (
+                  <li
+                    key={packet.id}
+                    onClick={() => handlePacketClick(packet)}
+                    className="p-4 bg-[#e5e5e6] rounded-3xl shadow-sm hover:bg-gray-100 hover:shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 cursor-pointer flex flex-col justify-between"
+                  >
+                    <h3 className="font-semibold text-lg sm:text-xl lg:text-2xl text-center text-gray-800">
+                      {packet.packet_title}
+                    </h3>
+                    <div className="text-center mt-2">
+                      <p className="text-xs sm:text-sm lg:text-base text-gray-600">
+                        {packet.packet_content}
+                      </p>
+                    </div>
+                    <div className="text-center mt-2">
+                      {(packet.heryone_dk !== 0 ||
+                        packet.heryone_sms !== 0 ||
+                        packet.heryone_int !== 0) && (
+                        <div>
+                          <p className="text-xs sm:text-sm lg:text-base text-gray-600">
+                            Heryöne {packet.heryone_dk} Dakika
+                          </p>
+                          <p className="text-xs sm:text-sm lg:text-base text-gray-600">
+                            Heryöne {packet.heryone_sms} SMS
+                          </p>
+                          <p className="text-xs sm:text-sm lg:text-base text-gray-600">
+                            Heryöne {packet.heryone_int} GB İnternet
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="mt-4 flex justify-center items-center text-xl w-full">
+                      <button className="w-full max-w-[150px] p-3 bg-[#fefeff] hover:bg-[#e5e5e6] text-gray-600 font-bold text-center rounded-3xl">
+                        {packet.price} TL
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
         )}
 
-      {/* Paket bulunamadı */}
       {!loading &&
         selectedOperator &&
-        packets.length === 0 &&
+        memoizedPackets.length === 0 &&
         !error &&
         !isAddingNewPacket && (
           <p className="text-gray-500 text-sm">
