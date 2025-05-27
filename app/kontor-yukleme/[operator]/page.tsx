@@ -320,10 +320,10 @@ export default function Page() {
             {/* Kullanıcının Telefon Numarası */}
             {isOpen && (
               <div className="flex flex-col items-center gap-2 bg-gray-100 p-6 rounded-2xl shadow-md">
-                <p className="text-lg font-semibold text-gray-700">
+                <p className="text-lg font-semibold text-black">
                   Telefon Numaranız:
                 </p>
-                <p className="text-2xl font-bold text-blue-600">+90 {phone}</p>
+                <p className="text-2xl font-bold text-black">+90 {phone}</p>
               </div>
             )}
           </div>
@@ -365,30 +365,30 @@ export default function Page() {
                 </div>
                 {/* Seçilen Paket İçeriği */}
                 <div className="bg-[#e5e5e6] rounded-3xl shadow-lg p-6 flex flex-col items-center">
-                  <h3 className="font-semibold text-2xl text-center text-gray-800">
+                  <h3 className="font-bold text-lg sm:text-xl lg:text-2xl text-center text-orange-400">
                     {selectedPacket.packet_title}
                   </h3>
                   <div className="text-center mt-4">
-                    <p className="text-base text-gray-600">
+                    <p className=" lg:text-base text-black font-semibold">
                       {selectedPacket.packet_content}
                     </p>
                     {(selectedPacket.heryone_dk !== 0 ||
                       selectedPacket.heryone_sms !== 0 ||
                       selectedPacket.heryone_int !== 0) && (
-                      <div>
-                        <p className="text-base text-gray-600">
+                      <div className="sm:text-sm lg:text-base text-black font-semibold">
+                        <p>
                           Heryöne {selectedPacket.heryone_dk} Dakika
                         </p>
-                        <p className="text-base text-gray-600">
+                        <p>
                           Heryöne {selectedPacket.heryone_sms} SMS
                         </p>
-                        <p className="text-base text-gray-600">
+                        <p>
                           Heryöne {selectedPacket.heryone_int} GB İnternet
                         </p>
                       </div>
                     )}
 
-                    <p className="text-xl font-bold text-gray-800 mt-4">
+                    <p className="text-xl font-bold text-black mt-4 bg-orange-300">
                       {selectedPacket.price} TL
                     </p>
                   </div>
@@ -419,11 +419,11 @@ export default function Page() {
                         className="p-3 bg-[#e5e5e6] rounded-3xl shadow-sm hover:bg-gray-100 hover:shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 cursor-pointer flex flex-col justify-between"
                         onClick={() => handlePacketSelect(filteredPacket)}
                       >
-                        <h3 className="font-semibold text-lg sm:text-xl lg:text-2xl text-center text-gray-800">
+                        <h3 className="font-bold text-lg sm:text-xl lg:text-2xl text-center text-orange-400">
                           {filteredPacket.packet_title}
                         </h3>
                         <div className="text-center mt-2">
-                          <p className="text-xs sm:text-sm lg:text-base text-gray-600">
+                          <p className=" lg:text-base text-black font-semibold">
                             {filteredPacket.packet_content}
                           </p>
                         </div>
@@ -431,21 +431,21 @@ export default function Page() {
                           {(filteredPacket.heryone_dk !== 0 ||
                             filteredPacket.heryone_sms !== 0 ||
                             filteredPacket.heryone_int !== 0) && (
-                            <div>
-                              <p className="text-xs sm:text-sm lg:text-base text-gray-600">
+                            <div className="sm:text-sm lg:text-base text-black font-semibold">
+                              <p>
                                 Heryöne {filteredPacket.heryone_dk} Dakika
                               </p>
-                              <p className="text-xs sm:text-sm lg:text-base text-gray-600">
+                              <p>
                                 Heryöne {filteredPacket.heryone_sms} SMS
                               </p>
-                              <p className="text-xs sm:text-sm lg:text-base text-gray-600">
+                              <p>
                                 Heryöne {filteredPacket.heryone_int} GB İnternet
                               </p>
                             </div>
                           )}
                         </div>
                         <div className="mt-4 flex justify-center items-center text-xl w-full">
-                          <button className="w-full max-w-[150px] p-3 bg-[#fefeff] hover:bg-[#e5e5e6] text-gray-600 font-bold text-center rounded-3xl">
+                          <button className="w-full max-w-[150px] p-3 bg-orange-300 hover:bg-[#e5e5e6] text-black font-bold text-center rounded-3xl">
                             {filteredPacket.price} TL
                           </button>
                         </div>

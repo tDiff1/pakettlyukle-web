@@ -9,9 +9,9 @@ interface Blog {
   blog_title: string;
   blog_description: string;
   blog_imageUrl?: string;
+  frame_url?: string;
+  frame_title?: string;
 }
-
-
 
 const BlogDetail = () => {
   const { slug } = useParams();
@@ -19,7 +19,9 @@ const BlogDetail = () => {
   const [blog, setBlog] = useState<Blog | null>(null);
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [compiledContent, setCompiledContent] = useState<ReactNode | null>(null);
+  const [compiledContent, setCompiledContent] = useState<ReactNode | null>(
+    null
+  );
 
   useEffect(() => {
     async function fetchBlogBySlug() {
@@ -51,7 +53,8 @@ const BlogDetail = () => {
         });
         setCompiledContent(content);
       } catch (err: unknown) {
-        const errorMessage = err instanceof Error ? err.message : "Bir hata oluştu";
+        const errorMessage =
+          err instanceof Error ? err.message : "Bir hata oluştu";
         setError(errorMessage);
       } finally {
         setLoading(false);
@@ -97,6 +100,19 @@ const BlogDetail = () => {
               className="rounded-2xl shadow-md object-cover w-full h-auto max-h-[400px]"
               priority
             />
+            {(blog.frame_title !== "" || blog.frame_url !== "") && (
+              <div className="aspect-video w-full max-w-3xl mx-auto mt-8">
+                <iframe
+                  className="rounded-2xl shadow-lg"
+                  width="100%"
+                  height="100%"
+                  src={blog.frame_url}
+                  title={blog.frame_title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              </div>
+            )}
           </div>
         )}
 

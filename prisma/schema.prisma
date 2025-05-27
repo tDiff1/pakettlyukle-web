@@ -51,7 +51,7 @@ model Packets {
   heryone_sms    Int
   heryone_int    Int
   price          Int
-  sort_order Int    @default(0)
+  sort_order     Int    @default(0)
 }
 
 model Yasal {
@@ -100,6 +100,8 @@ model Blog {
   blog_description String   @db.LongText
   blog_imageUrl    String?  @db.LongText
   createdAt        DateTime @default(now())
+  frame_title      String?  @db.LongText
+  frame_url        String?  @db.LongText
 }
 
 model SmsRecipient {

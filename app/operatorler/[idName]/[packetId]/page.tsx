@@ -102,24 +102,24 @@ const PacketDetail = () => {
           <div className="bg-gradient-to-r from-[#e5e5e6] to-[#f0f0f0] p-6 rounded-xl flex flex-col justify-between min-h-[360px]">
             <div className="flex flex-col gap-4">
               {/* Başlık */}
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-xl font-bold text-orange-400">
                 {packet.packet_title}
               </h2>
 
               {/* Açıklama (min sabit yükseklik) */}
-              <p className="text-gray-700 min-h-[60px]">
+              <p className="text-black font-bold  min-h-[60px]">
                 {packet.packet_content}
               </p>
 
               {/* DK/SMS/GB Bilgisi (boş da olsa kutu sabit kalsın) */}
-              <div className="text-gray-700 grid grid-cols-2 gap-2 min-h-[64px]">
-                <p>Konuşma: {packet.heryone_dk || 0} DK</p>
-                <p>SMS: {packet.heryone_sms || 0}</p>
-                <p>İnternet: {packet.heryone_int || 0} GB</p>
+              <div className="text-black font-bold  grid grid-cols-2 gap-2 min-h-[64px]">
+                <p>Heryöne {packet.heryone_dk || 0} DK</p>
+                <p>Heryöne {packet.heryone_sms || 0} SMS</p>
+                <p>Heryöne {packet.heryone_int || 0} GB</p>
               </div>
 
               {/* Fiyat */}
-              <p className="font-bold text-gray-900 text-lg">
+              <p className="font-bold text-black text-lg bg-orange-300 w-fit p-1 px-3 rounded-xl">
                 Fiyat: {packet.price} TL
               </p>
             </div>

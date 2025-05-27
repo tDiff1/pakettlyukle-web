@@ -12,6 +12,8 @@ type Blog = {
   blog_description: string;
   blog_imageUrl?: string;
   compiledContent?: React.ReactNode;
+  frame_title?: string;
+  frame_url?: string;
 };
 
 const Blog = () => {
