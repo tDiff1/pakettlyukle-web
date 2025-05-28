@@ -82,42 +82,44 @@ const PacketList = () => {
         ) : packets.length === 0 ? (
           <p className="text-center">Bu operatör için paket bulunamadı.</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {packets.sort((a, b) => a.sort_order - b.sort_order).map((packet) => (
-              <Link
-                key={packet.packet_title}
-                href={`/operatorler/${idName}/${getPacketSlug(
-                  packet.packet_title
-                )}`}
-                className="bg-[#e5e5e6] p-4 rounded-xl flex flex-col justify-between hover:scale-105 transform transition-transform duration-300 min-h-[250px]"
-              >
-                {/* Başlık */}
-                <h2 className="text-xl font-bold text-orange-400 mb-2">
-                  {packet.packet_title}
-                </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-center">
+            {packets
+              .sort((a, b) => a.sort_order - b.sort_order)
+              .map((packet) => (
+                <Link
+                  key={packet.packet_title}
+                  href={`/operatorler/${idName}/${getPacketSlug(
+                    packet.packet_title
+                  )}`}
+                  className="bg-[#e5e5e6] p-4 rounded-xl flex flex-col justify-between hover:scale-105 transform transition-transform duration-300 min-h-[250px]"
+                >
+                  {/* Başlık */}
+                  <h2 className="text-xl font-bold text-orange-400 mb-2">
+                    {packet.packet_title}
+                  </h2>
 
-                {/* Açıklama */}
-                <p className="text-sm sm:text-sm lg:text-md text-black font-bold  mb-3">
-                  {packet.packet_content}
-                </p>
+                  {/* Açıklama */}
+                  <p className="text-md sm:text-md lg:text-md text-black font-bold  mb-3">
+                    {packet.packet_content}
+                  </p>
 
-                {/* DK / SMS / GB */}
-                {(packet.heryone_dk !== 0 ||
-                  packet.heryone_sms !== 0 ||
-                  packet.heryone_int !== 0) && (
-                  <div className="text-sm sm:text-sm lg:text-md text-black font-bold  mb-2">
-                    <p>Heryöne {packet.heryone_dk} DK</p>
-                    <p>Heryöne {packet.heryone_sms} SMS</p>
-                    <p>Heryöne {packet.heryone_int} GB</p>
-                  </div>
-                )}
+                  {/* DK / SMS / GB */}
+                  {(packet.heryone_dk !== 0 ||
+                    packet.heryone_sms !== 0 ||
+                    packet.heryone_int !== 0) && (
+                    <div className="text-lg sm:text-md lg:text-md text-black font-bold  mb-2 text-center">
+                      <p>Heryöne {packet.heryone_dk} DK</p>
+                      <p>Heryöne {packet.heryone_sms} SMS</p>
+                      <p>Heryöne {packet.heryone_int} GB</p>
+                    </div>
+                  )}
 
-                {/* Fiyat */}
-                <p className="font-bold text-black  bg-orange-300 w-fit p-1 rounded-xl px-4 text-sm mt-auto">
-                  Fiyat: {packet.price} TL
-                </p>
-              </Link>
-            ))}
+                  {/* Fiyat */}
+                    <p className="font-bold text-black  bg-orange-300  p-1 rounded-xl px-4 text-md ">
+                      Fiyat: {packet.price} TL
+                    </p>
+                </Link>
+              ))}
           </div>
         )}
       </div>

@@ -35,7 +35,7 @@ const Operatörler = () => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center w-full max-w-6xl mx-auto px-4 py-6">
+    <div className="flex flex-col items-center justify-center w-full max-w-6xl mx-auto px-4 py-6 md:min-h-[920px]  lg:min-h-[600px]">
       <div className="w-full bg-white p-4 sm:p-6 rounded-3xl shadow-md">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {operators.map((operator) => (

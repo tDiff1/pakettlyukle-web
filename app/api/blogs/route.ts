@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { put } from "@vercel/blob";
+import { frame } from "framer-motion";
 
 const prisma = new PrismaClient({
   datasources: {
@@ -16,6 +17,8 @@ export async function POST(req: Request) {
     const title = formData.get("blog_title") as string;
     const description = formData.get("blog_description") as string;
     const image = formData.get("blog_imageUrl") as File | null;
+    const frame_title = formData.get("frame_title") as string;
+    const frame_url = formData.get("frame_url") as string;
 
     if (
       !title ||
@@ -83,6 +86,8 @@ export async function POST(req: Request) {
         blog_description: description,
         blog_imageUrl: imageUrl,
         createdAt: new Date(),
+        frame_title: frame_title,
+        frame_url: frame_url,
       },
     });
 

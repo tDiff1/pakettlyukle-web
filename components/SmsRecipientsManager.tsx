@@ -14,7 +14,6 @@ export default function SmsRecipientsManager() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Numara listesini getir
   async function fetchRecipients() {
     setLoading(true);
     setError(null);
@@ -30,12 +29,10 @@ export default function SmsRecipientsManager() {
     }
   }
 
-  // Sayfa yüklendiğinde listeyi çek
   useEffect(() => {
     fetchRecipients();
   }, []);
 
-  // Yeni numara ekle
   async function handleAdd() {
     if (!phone.trim()) {
       setError("Lütfen numara girin");
@@ -73,7 +70,6 @@ export default function SmsRecipientsManager() {
     }
   }
 
-  // Numara sil
   async function handleDelete(id: number) {
     if (!confirm("Bu numarayı silmek istediğinize emin misiniz?")) return;
 
@@ -100,14 +96,14 @@ export default function SmsRecipientsManager() {
   }
 
   return (
-    <div className="max-w-md mx-auto p-4 bg-[#e5e5e6] rounded-3xl shadow">
-      <h2 className="text-xl font-semibold mb-4">Hedef Numara Yönetimi</h2>
+    <div className="w-full max-w-2xl mx-auto p-4 sm:p-6 md:p-8 bg-[#e5e5e6] rounded-3xl shadow">
+      <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-center">Hedef Numara Yönetimi</h2>
 
-      <div className="flex gap-2 mb-4">
+      <div className="flex flex-col sm:flex-row gap-2 mb-4">
         <input
           type="text"
           placeholder="Numara girin (örn: 8503xxxxxxx)"
-          className="flex-grow border border-gray-300 rounded px-3 py-2"
+          className="flex-grow border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           disabled={loading}
@@ -115,23 +111,23 @@ export default function SmsRecipientsManager() {
         <button
           onClick={handleAdd}
           disabled={loading}
-          className="bg-blue-600 text-white px-4 rounded hover:bg-blue-700 disabled:opacity-50"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 w-full sm:w-auto"
         >
           Ekle
         </button>
       </div>
 
-      {error && <div className="mb-4 text-red-600 font-medium">{error}</div>}
+      {error && <div className="mb-4 text-red-600 font-medium text-center">{error}</div>}
 
-      {loading && <div className="mb-4">Yükleniyor...</div>}
+      {loading && <div className="mb-4 text-center">Yükleniyor...</div>}
 
       <ul className="divide-y divide-gray-200">
         {recipients.map((r) => (
-          <li key={r.id} className="flex justify-between items-center py-2">
-            <span>{r.phone}</span>
+          <li key={r.id} className="flex justify-between items-center py-2 px-2">
+            <span className="text-sm sm:text-base">{r.phone}</span>
             <button
               onClick={() => handleDelete(r.id)}
-              className="text-red-600 hover:underline"
+              className="text-red-600 hover:underline text-sm sm:text-base"
               disabled={loading}
             >
               Sil
@@ -139,7 +135,7 @@ export default function SmsRecipientsManager() {
           </li>
         ))}
         {recipients.length === 0 && !loading && (
-          <li key="empty" className="text-gray-500 text-center py-4">
+          <li className="text-gray-500 text-center py-4 text-sm sm:text-base">
             Kayıtlı numara yok.
           </li>
         )}

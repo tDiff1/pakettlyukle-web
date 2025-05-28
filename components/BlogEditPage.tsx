@@ -12,6 +12,8 @@ interface Blog {
   blog_description: string;
   blog_imageUrl?: string;
   createdAt: string;
+  frame_title?: string;
+  frame_url?: string;
 }
 
 const BlogEditPage = () => {
@@ -22,16 +24,22 @@ const BlogEditPage = () => {
     description: "",
     image: null as File | null,
     imageUrl: "",
+    frame_title: "",
+    frame_url: "",
   });
   const [newBlog, setNewBlog] = useState({
     title: "",
     description: "",
     image: null as File | null,
+    frame_title: "",
+    frame_url: "",
   });
   const [showAddForm, setShowAddForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
+  const [enableVideo, setEnableVideo] = useState(false);
+  const [enableEditVideo, setEnableEditVideo] = useState(false);
 
   useEffect(() => {
     fetchBlogs();
@@ -69,14 +77,25 @@ const BlogEditPage = () => {
       description: blog.blog_description,
       image: null,
       imageUrl: blog.blog_imageUrl || "",
+      frame_title: blog.frame_title || "",
+      frame_url: blog.frame_url || "",
     });
+    setEnableEditVideo(!!blog.frame_title || !!blog.frame_url);
     setError(null);
     setInfo(null);
   };
 
   const cancelEditing = () => {
     setEditingId(null);
-    setEditForm({ title: "", description: "", image: null, imageUrl: "" });
+    setEditForm({
+      title: "",
+      description: "",
+      image: null,
+      imageUrl: "",
+      frame_title: "",
+      frame_url: "",
+    });
+    setEnableEditVideo(false);
     setError(null);
     setInfo(null);
     setConfirmDelete(null);
@@ -87,11 +106,13 @@ const BlogEditPage = () => {
     const original = blogs.find((b) => b.id === editingId);
     if (!original) return;
 
-    const { title, description, image } = editForm;
+    const { title, description, image, frame_title, frame_url } = editForm;
     if (
       title === original.blog_title &&
       description === original.blog_description &&
-      !image
+      !image &&
+      frame_title === (original.frame_title || "") &&
+      frame_url === (original.frame_url || "")
     ) {
       cancelEditing();
       return;
@@ -102,6 +123,16 @@ const BlogEditPage = () => {
       formData.append("blog_title", title);
       formData.append("blog_description", description);
       if (image) formData.append("blog_imageUrl", image);
+      if (enableEditVideo && frame_title.trim()) {
+        formData.append("frame_title", frame_title);
+      } else {
+        formData.append("frame_title", "");
+      }
+      if (enableEditVideo && frame_url.trim()) {
+        formData.append("frame_url", frame_url);
+      } else {
+        formData.append("frame_url", "");
+      }
 
       const response = await fetch(`/api/blogs/${editingId}`, {
         method: "PUT",
@@ -150,7 +181,7 @@ const BlogEditPage = () => {
 
   const addNewBlog = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { title, description, image } = newBlog;
+    const { title, description, image, frame_title, frame_url } = newBlog;
     if (!title.trim() || !description.trim()) {
       setError("Başlık ve açıklama zorunludur.");
       return;
@@ -164,6 +195,16 @@ const BlogEditPage = () => {
       formData.append("blog_title", title);
       formData.append("blog_description", description);
       if (image) formData.append("blog_imageUrl", image);
+      if (enableVideo && frame_title.trim()) {
+        formData.append("frame_title", frame_title);
+      } else {
+        formData.append("frame_title", "");
+      }
+      if (enableVideo && frame_url.trim()) {
+        formData.append("frame_url", frame_url);
+      } else {
+        formData.append("frame_url", "");
+      }
 
       const response = await fetch("/api/blogs", {
         method: "POST",
@@ -181,12 +222,20 @@ const BlogEditPage = () => {
         );
         return newBlogs;
       });
-      setNewBlog({ title: "", description: "", image: null });
+      setNewBlog({
+        title: "",
+        description: "",
+        image: null,
+        frame_title: "",
+        frame_url: "",
+      });
       setShowAddForm(false);
+      setEnableVideo(false);
       setError(null);
       setInfo("Blog başarıyla eklendi.");
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Blog eklenemedi";
+      const errorMessage =
+        err instanceof Error ? err.message : "Blog eklenemedi";
       console.error("Error:", errorMessage);
       setError(errorMessage);
     }
@@ -213,7 +262,9 @@ const BlogEditPage = () => {
   function truncateTextWithLink(text: string | undefined, maxLength: number) {
     if (!text) return null;
     if (text.length <= maxLength) {
-      return <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{text}</ReactMarkdown>;
+      return (
+        <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{text}</ReactMarkdown>
+      );
     }
     return (
       <ReactMarkdown rehypePlugins={[rehypeSanitize]}>
@@ -223,17 +274,19 @@ const BlogEditPage = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
+    <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 md:p-8 space-y-4">
       {error && (
-        <p className="text-red-500 mb-4 text-center font-medium">{error}</p>
+        <p className="text-red-600 text-sm text-center font-medium">{error}</p>
       )}
       {info && (
-        <p className="text-green-500 mb-4 text-center font-medium">{info}</p>
+        <p className="text-green-600 text-sm text-center font-medium">{info}</p>
       )}
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Blog Yönetim Paneli</h1>
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+          Blog Yönetim Paneli
+        </h1>
         <button
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
           onClick={() => setShowAddForm(!showAddForm)}
         >
           {showAddForm ? "İptal Et" : "Yeni Blog Ekle"}
@@ -242,29 +295,47 @@ const BlogEditPage = () => {
       {showAddForm && (
         <form
           onSubmit={addNewBlog}
-          className="mb-8 p-6 bg-white rounded-lg shadow-lg border border-gray-100"
+          className="space-y-4 p-4 sm:p-6 bg-white rounded-xl shadow-md"
         >
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Başlık
-            </label>
-            <input
-              type="text"
-              value={newBlog.title}
-              onChange={(e) =>
-                setNewBlog({ ...newBlog, title: e.target.value })
-              }
-              placeholder="Blog başlığını girin"
-              className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 ${
-                newBlog.title ? "focus:ring-blue-600" : "border-red-300"
-              }`}
-              required
-            />
-            {!newBlog.title && (
-              <p className="text-red-500 text-xs mt-1">Başlık zorunludur</p>
-            )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Başlık
+              </label>
+              <input
+                type="text"
+                value={newBlog.title}
+                onChange={(e) =>
+                  setNewBlog({ ...newBlog, title: e.target.value })
+                }
+                placeholder="Blog başlığını girin"
+                className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 ${
+                  newBlog.title ? "focus:ring-blue-600" : "border-red-300"
+                }`}
+                required
+              />
+              {!newBlog.title && (
+                <p className="text-red-500 text-xs mt-1">Başlık zorunludur</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Görsel (İsteğe bağlı)
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleNewImageChange}
+                className="w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              />
+              {newBlog.image && (
+                <p className="text-sm text-gray-500 mt-2">
+                  {newBlog.image.name}
+                </p>
+              )}
+            </div>
           </div>
-          <div className="mb-4">
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Açıklama (Markdown destekler)
             </label>
@@ -283,30 +354,67 @@ const BlogEditPage = () => {
             {!newBlog.description && (
               <p className="text-red-500 text-xs mt-1">Açıklama zorunludur</p>
             )}
-            <div className="mt-2 p-2 bg-gray-100 rounded-lg">
+            <div className="mt-2 p-2 bg-gray-50 rounded-lg">
               <h3 className="text-sm font-semibold text-gray-700">Önizleme</h3>
               <ReactMarkdown rehypePlugins={[rehypeSanitize]}>
                 {newBlog.description || "Önizleme burada görünecek"}
               </ReactMarkdown>
             </div>
           </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Görsel (İsteğe bağlı)
+          <div className="space-y-2">
+            <label className="flex items-center text-sm font-medium text-gray-700">
+              <input
+                type="checkbox"
+                checked={enableVideo}
+                onChange={(e) => setEnableVideo(e.target.checked)}
+                className="mr-2 h-4 w-4 text-blue-600"
+              />
+              YouTube Video Ekle
             </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleNewImageChange}
-              className="text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-            />
-            {newBlog.image && (
-              <p className="text-sm text-gray-500 mt-2">{newBlog.image.name}</p>
-            )}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Video Başlığı
+                </label>
+                <input
+                  type="text"
+                  value={newBlog.frame_title}
+                  onChange={(e) =>
+                    setNewBlog({ ...newBlog, frame_title: e.target.value })
+                  }
+                  placeholder="Video başlığı"
+                  className={`w-full p-3 border rounded-lg focus:outline-none text-sm ${
+                    enableVideo
+                      ? "focus:ring-2 focus:ring-blue-600"
+                      : "bg-gray-200 cursor-not-allowed text-gray-400"
+                  }`}
+                  disabled={!enableVideo}
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Video URL
+                </label>
+                <input
+                  type="text"
+                  value={newBlog.frame_url}
+                  onChange={(e) =>
+                    setNewBlog({ ...newBlog, frame_url: e.target.value })
+                  }
+                  placeholder="Video URL"
+                  className={`w-full p-3 border rounded-lg focus:outline-none text-sm ${
+                    enableVideo
+                      ? "focus:ring-2 focus:ring-blue-600"
+                      : "bg-gray-200 cursor-not-allowed text-gray-400"
+                  }`}
+                  disabled={!enableVideo}
+                />
+              </div>
+            </div>
           </div>
           <button
             type="submit"
-            className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition flex items-center gap-2"
+            className="w-full sm:w-auto bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2"
             disabled={!newBlog.title || !newBlog.description}
           >
             <svg
@@ -326,26 +434,48 @@ const BlogEditPage = () => {
           </button>
         </form>
       )}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {blogs.map((blog) => {
           const textMaxLength = blog.blog_imageUrl ? 790 : 1230;
           return editingId === blog.id ? (
             <div
               key={String(blog.id)}
-              className="relative p-4 bg-white rounded-lg shadow-lg"
+              className="relative p-4 sm:p-6 bg-white rounded-xl shadow-md"
             >
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Başlık
-                </label>
-                <input
-                  type="text"
-                  value={editForm.title}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, title: e.target.value })
-                  }
-                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Başlık
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.title}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, title: e.target.value })
+                    }
+                    className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Görsel
+                  </label>
+                  {editForm.imageUrl && (
+                    <Image
+                      src={editForm.imageUrl}
+                      alt="Seçilen görsel"
+                      width={300}
+                      height={150}
+                      className="w-full h-24 sm:h-36 object-cover rounded-lg mb-2"
+                    />
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleEditImageChange}
+                    className="w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  />
+                </div>
               </div>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -359,7 +489,7 @@ const BlogEditPage = () => {
                   className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                   rows={5}
                 />
-                <div className="mt-2 p-2 bg-gray-100 rounded-lg">
+                <div className="mt-2 p-2 bg-gray-50 rounded-lg">
                   <h3 className="text-sm font-semibold text-gray-700">
                     Önizleme
                   </h3>
@@ -368,63 +498,97 @@ const BlogEditPage = () => {
                   </ReactMarkdown>
                 </div>
               </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Görsel
-                </label>
-                {editForm.imageUrl && (
-                  <Image
-                    src={editForm.imageUrl}
-                    alt="Seçilen görsel"
-                    width={300}
-                    height={150}
-                    className="w-full h-36 object-cover rounded-lg mb-2"
+              <div className="space-y-2 mb-4">
+                <label className="flex items-center text-sm font-medium text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={enableEditVideo}
+                    onChange={(e) => setEnableEditVideo(e.target.checked)}
+                    className="mr-2 h-4 w-4 text-blue-600"
                   />
-                )}
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleEditImageChange}
-                  className="text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                />
+                  YouTube Video Ekle
+                </label>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Video Başlığı
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.frame_title}
+                      onChange={(e) =>
+                        setEditForm({
+                          ...editForm,
+                          frame_title: e.target.value,
+                        })
+                      }
+                      placeholder="Video başlığı girin"
+                      className={`w-full p-3 border rounded-lg focus:outline-none text-sm ${
+                        enableEditVideo
+                          ? "focus:ring-2 focus:ring-blue-600"
+                          : "bg-gray-200 cursor-not-allowed text-gray-400"
+                      }`}
+                      disabled={!enableEditVideo}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Video URL
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.frame_url}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, frame_url: e.target.value })
+                      }
+                      placeholder="Video URL girin"
+                      className={`w-full p-3 border rounded-lg focus:outline-none text-sm ${
+                        enableEditVideo
+                          ? "focus:ring-2 focus:ring-blue-600"
+                          : "bg-gray-200 cursor-not-allowed text-gray-400"
+                      }`}
+                      disabled={!enableEditVideo}
+                    />
+                  </div>
+                </div>
               </div>
               {confirmDelete === blog.id ? (
                 <div className="mb-4">
                   <p className="text-sm font-medium text-gray-800 mb-2">
                     Bu blogu silmek istediğinizden emin misiniz?
                   </p>
-                  <div className="flex gap-3">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <button
                       onClick={deleteBlog}
-                      className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
+                      className="w-full sm:w-auto bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
                     >
                       Evet
                     </button>
                     <button
                       onClick={() => setConfirmDelete(null)}
-                      className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
+                      className="w-full sm:w-auto bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
                     >
                       Hayır
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                   <button
                     onClick={saveChanges}
-                    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
+                    className="w-full sm:w-auto bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
                   >
                     Kaydet
                   </button>
                   <button
                     onClick={cancelEditing}
-                    className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
+                    className="w-full sm:w-auto bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
                   >
                     İptal
                   </button>
                   <button
                     onClick={() => setConfirmDelete(blog.id)}
-                    className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
+                    className="w-full sm:w-auto bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
                   >
                     Sil
                   </button>
@@ -437,7 +601,7 @@ const BlogEditPage = () => {
           ) : (
             <div
               key={String(blog.id)}
-              className="relative p-4 bg-white rounded-lg shadow-lg hover:shadow-xl transition cursor-pointer"
+              className="relative p-4 sm:p-6 bg-white rounded-xl shadow-md hover:shadow-lg transition cursor-pointer"
               onClick={() => startEditing(blog)}
             >
               {blog.blog_imageUrl && (
@@ -446,13 +610,13 @@ const BlogEditPage = () => {
                   alt={blog.blog_title}
                   width={300}
                   height={150}
-                  className="w-full h-36 object-cover rounded-lg mt-4"
+                  className="w-full h-24 sm:h-36 object-cover rounded-lg mt-2"
                 />
               )}
-              <h2 className="text-xl font-semibold text-gray-800 my-5">
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900 my-3 sm:my-4">
                 {blog.blog_title}
               </h2>
-              <div className="text-sm text-gray-600">
+              <div className="text-xs sm:text-sm text-gray-600">
                 {truncateTextWithLink(blog.blog_description, textMaxLength)}
               </div>
               <span className="absolute top-2 right-2 text-xs text-gray-500">

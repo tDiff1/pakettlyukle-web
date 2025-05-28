@@ -90,31 +90,32 @@ const BlogDetail = () => {
       {/* Blog İçeriği */}
       <div className="bg-white p-5 sm:p-6 md:p-10 rounded-3xl shadow-lg flex flex-col lg:flex-row gap-8">
         {/* Görsel */}
-        {blog.blog_imageUrl && (
-          <div className="w-full lg:w-1/2">
+        <div className="w-full lg:w-1/2">
+          {blog.blog_imageUrl && (
             <Image
               src={blog.blog_imageUrl}
               alt={blog.blog_title}
               width={800}
               height={500}
-              className="rounded-2xl shadow-md object-cover w-full h-auto max-h-[400px]"
+              className="rounded-2xl shadow-md object-cover w-full h-auto max-h-[400px] mb-8"
               priority
             />
-            {(blog.frame_title !== "" || blog.frame_url !== "") && (
-              <div className="aspect-video w-full max-w-3xl mx-auto mt-8">
-                <iframe
-                  className="rounded-2xl shadow-lg"
-                  width="100%"
-                  height="100%"
-                  src={blog.frame_url}
-                  title={blog.frame_title}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                ></iframe>
-              </div>
-            )}
-          </div>
-        )}
+          )}
+          {(blog.frame_title !== "" || blog.frame_url !== "") && (
+            <div className="aspect-video w-full max-w-3xl mx-auto">
+              <iframe
+                className="rounded-2xl shadow-lg"
+                width="100%"
+                height="100%"
+                src={blog.frame_url}
+                title={blog.frame_title}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                loading="lazy"
+                allowFullScreen
+              ></iframe>
+            </div>
+          )}
+        </div>
 
         {/* Metin İçeriği */}
         <div className="flex flex-col gap-4 w-full min-w-0">

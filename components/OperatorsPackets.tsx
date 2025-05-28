@@ -333,13 +333,13 @@ const OperatorsPackets = () => {
   const memoizedPackets = useMemo(() => packets, [packets]);
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-6 bg-gray-50 rounded-2xl shadow-lg">
-      <h2 className="text-3xl font-bold text-gray-800">Operatör Paketleri</h2>
+    <div className="w-full max-w-5xl mx-auto p-4 sm:p-6 md:p-8 space-y-4 bg-white rounded-xl shadow-md">
+      <h2 className="text-xl sm:text-2xl font-bold text-gray-700">Operatör Paketleri</h2>
 
-      <div>
+      <div className="flex flex-col sm:flex-row gap-4 items-center">
         <label
           htmlFor="operator"
-          className="block mb-2 text-sm font-medium text-gray-700"
+          className="block mb-1 sm:mb-0 text-sm font-medium text-gray-700"
         >
           Operatör Seç
         </label>
@@ -347,7 +347,7 @@ const OperatorsPackets = () => {
           id="operator"
           value={selectedOperator}
           onChange={handleOperatorChange}
-          className="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm"
+          className="block w-full sm:w-auto p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
         >
           <option value="">Bir operatör seçin</option>
           {operators.map((operator) => (
@@ -358,13 +358,13 @@ const OperatorsPackets = () => {
         </select>
       </div>
 
-      {error && <p className="text-red-500 text-sm mt-2">Hata: {error}</p>}
+      {error && <p className="text-red-600 text-sm text-center">{error}</p>}
       {successMessage && (
-        <p className="text-green-500 text-sm mt-2">{successMessage}</p>
+        <p className="text-green-600 text-sm text-center">{successMessage}</p>
       )}
 
       {loading && !error && (
-        <div className="flex items-center gap-2 text-indigo-600 text-sm">
+        <div className="flex items-center gap-2 text-blue-600 text-sm justify-center">
           <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none">
             <circle
               className="opacity-25"
@@ -385,23 +385,23 @@ const OperatorsPackets = () => {
       )}
 
       {selectedOperator && !selectedPacket && !isAddingNewPacket && (
-        <div className="mt-4 flex gap-4">
+        <div className="mt-4 flex flex-col sm:flex-row gap-2 sm:gap-4">
           <button
             onClick={handleNewPacketClick}
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 w-full sm:w-auto"
           >
             Yeni Paket Ekle
           </button>
           <button
             onClick={handleListViewToggle}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 w-full sm:w-auto"
           >
             {isListView ? "Grid Görünüm" : "Listele"}
           </button>
           {isListView && hasOrderChanged && (
             <button
               onClick={handleSaveOrder}
-              className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+              className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 w-full sm:w-auto"
             >
               Kaydet
             </button>
@@ -412,13 +412,13 @@ const OperatorsPackets = () => {
       {(selectedPacket || isAddingNewPacket) && (
         <form
           onSubmit={handleFormSubmit}
-          className="space-y-4 bg-white p-6 rounded-2xl shadow"
+          className="space-y-4 bg-gray-50 p-4 sm:p-6 rounded-xl shadow-md"
         >
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
-            <h3 className="text-xl font-bold text-gray-800">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-800">
               {isAddingNewPacket ? "Yeni Paket Ekle" : "Paketi Güncelle"}
             </h3>
-            <label className="inline-flex items-center gap-2 cursor-pointer select-none text-sm font-medium text-gray-700">
+            <label className="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700">
               <input
                 type="checkbox"
                 checked={isTlPackage}
@@ -428,21 +428,36 @@ const OperatorsPackets = () => {
               <span>TL Paketi</span>
             </label>
           </div>
-          <div>
-            <label className="block mb-1 font-medium text-sm text-gray-700">
-              Paket Başlığı
-            </label>
-            <input
-              type="text"
-              name="packet_title"
-              value={formData.packet_title || ""}
-              onChange={handleFormChange}
-              placeholder="Örn: Süper 10GB"
-              className="w-full p-2 border rounded"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block mb-1 text-sm font-medium text-gray-700">
+                Paket Başlığı
+              </label>
+              <input
+                type="text"
+                name="packet_title"
+                value={formData.packet_title || ""}
+                onChange={handleFormChange}
+                placeholder="Örn: Süper 10GB"
+                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block mb-1 text-sm font-medium text-gray-700">
+                Fiyat (TL)
+              </label>
+              <input
+                type="number"
+                name="price"
+                value={formData.price ?? ""}
+                onChange={handleFormChange}
+                placeholder="Örn: 89"
+                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
           </div>
           <div>
-            <label className="block mb-1 font-medium text-sm text-gray-700">
+            <label className="block mb-1 text-sm font-medium text-gray-700">
               Paket İçeriği
             </label>
             <textarea
@@ -450,67 +465,56 @@ const OperatorsPackets = () => {
               value={formData.packet_content || ""}
               onChange={handleFormChange}
               placeholder="Örn: 18 GB +1000 DK (hızlı)"
-              className="w-full p-2 border rounded resize-y min-h-[100px]"
+              className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y min-h-[80px] sm:min-h-[100px]"
             />
           </div>
-          <div>
-            <label className="block mb-1 font-medium text-sm text-gray-700">
-              Heryöne Dakika
-            </label>
-            <input
-              type="number"
-              name="heryone_dk"
-              value={isTlPackage ? 0 : formData.heryone_dk ?? 0}
-              onChange={handleFormChange}
-              disabled={isTlPackage}
-              className="w-full p-2 border rounded bg-white disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block mb-1 text-sm font-medium text-gray-700">
+                Heryöne Dakika
+              </label>
+              <input
+                type="number"
+                name="heryone_dk"
+                value={isTlPackage ? 0 : formData.heryone_dk ?? 0}
+                onChange={handleFormChange}
+                disabled={isTlPackage}
+                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
+              />
+            </div>
+            <div>
+              <label className="block mb-1 text-sm font-medium text-gray-700">
+                Heryöne SMS
+              </label>
+              <input
+                type="number"
+                name="heryone_sms"
+                value={isTlPackage ? 0 : formData.heryone_sms ?? 0}
+                onChange={handleFormChange}
+                disabled={isTlPackage}
+                placeholder="SMS sayısı"
+                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
+              />
+            </div>
+            <div>
+              <label className="block mb-1 text-sm font-medium text-gray-700">
+                Heryöne İnternet (GB)
+              </label>
+              <input
+                type="number"
+                name="heryone_int"
+                value={isTlPackage ? 0 : formData.heryone_int ?? 0}
+                onChange={handleFormChange}
+                disabled={isTlPackage}
+                placeholder="GB cinsinden"
+                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
+              />
+            </div>
           </div>
-          <div>
-            <label className="block mb-1 font-medium text-sm text-gray-700">
-              Heryöne SMS
-            </label>
-            <input
-              type="number"
-              name="heryone_sms"
-              value={isTlPackage ? 0 : formData.heryone_sms ?? 0}
-              onChange={handleFormChange}
-              disabled={isTlPackage}
-              placeholder="SMS sayısı"
-              className="w-full p-2 border rounded bg-white disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
-            />
-          </div>
-          <div>
-            <label className="block mb-1 font-medium text-sm text-gray-700">
-              Heryöne İnternet (GB)
-            </label>
-            <input
-              type="number"
-              name="heryone_int"
-              value={isTlPackage ? 0 : formData.heryone_int ?? 0}
-              onChange={handleFormChange}
-              disabled={isTlPackage}
-              placeholder="GB cinsinden"
-              className="w-full p-2 border rounded bg-white disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
-            />
-          </div>
-          <div>
-            <label className="block mb-1 font-medium text-sm text-gray-700">
-              Fiyat (TL)
-            </label>
-            <input
-              type="number"
-              name="price"
-              value={formData.price ?? ""}
-              onChange={handleFormChange}
-              placeholder="Örn: 89"
-              className="w-full p-2 border rounded"
-            />
-          </div>
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
             <button
               type="submit"
-              className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 w-full sm:w-auto"
             >
               {isAddingNewPacket ? "Ekle" : "Kaydet"}
             </button>
@@ -521,7 +525,7 @@ const OperatorsPackets = () => {
                 setIsAddingNewPacket(false);
                 setFormData({});
               }}
-              className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
+              className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500 w-full sm:w-auto"
             >
               İptal
             </button>
@@ -529,7 +533,7 @@ const OperatorsPackets = () => {
               <button
                 type="button"
                 onClick={handleDeletePacket}
-                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 w-full sm:w-auto"
               >
                 Sil
               </button>
@@ -551,13 +555,12 @@ const OperatorsPackets = () => {
                     <div
                       {...provided.droppableProps}
                       ref={provided.innerRef}
-                      className="overflow-y-auto max-h-[600px] w-full max-w-full"
+                      className="overflow-y-auto max-h-[600px] w-full"
                       style={{
                         background: snapshot.isDraggingOver
                           ? "#f0f0ff"
                           : "transparent",
-                        padding: "0 16px",
-                        position: "relative",
+                        padding: "0 8px",
                       }}
                     >
                       {memoizedPackets.map((packet, index) => (
@@ -566,65 +569,51 @@ const OperatorsPackets = () => {
                           draggableId={packet.id.toString()}
                           index={index}
                         >
-                          {(provided, snapshot) => {
-                            
-                            return (
-                              <div
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                                className={`p-4 bg-[#e5e5e6] rounded-3xl shadow-sm hover:bg-gray-100 flex flex-row items-center gap-4 transition-all duration-200 mb-4 ${
-                                  snapshot.isDragging
-                                    ? "border-2 border-indigo-500 opacity-90 shadow-xl z-50"
-                                    : "border-2 border-transparent"
-                                }`}
-                                style={{
-                                  ...provided.draggableProps.style,
-                                  transform: snapshot.isDragging
-                                    ? `translate(0px, ${
-                                        provided.draggableProps.style?.transform?.match(
-                                          /translate\((.*?), (.*?)\)/
-                                        )?.[2] || "0px"
-                                      })`
-                                    : provided.draggableProps.style?.transform,
-                                  left: "16%", // Force horizontal position
-                                  cursor: snapshot.isDragging
-                                    ? "grabbing"
-                                    : "grab",
-                                  boxSizing: "border-box",
-                                  zIndex: snapshot.isDragging ? 1000 : "auto",
-                                }}
-                              >
-                                <span className="text-lg font-bold text-gray-800 w-8">
-                                  {index + 1}
-                                </span>
-                                <div className="flex-1">
-                                  <h3 className="font-semibold text-lg sm:text-xl lg:text-2xl text-center text-gray-800">
-                                    {packet.packet_title}
-                                  </h3>
-                                  <div className="text-center mt-2 text-gray-600 text-sm">
-                                    {packet.packet_content}
-                                  </div>
-                                  <div className="text-center mt-2 text-gray-600 text-sm">
-                                    {(packet.heryone_dk !== 0 ||
-                                      packet.heryone_sms !== 0 ||
-                                      packet.heryone_int !== 0) && (
-                                      <div>
-                                        <p>Heryöne {packet.heryone_dk} DK</p>
-                                        <p>Heryöne {packet.heryone_sms} SMS</p>
-                                        <p>Heryöne {packet.heryone_int} GB</p>
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div className="mt-4 flex justify-center">
-                                    <button className="w-full max-w-[150px] p-3 bg-[#fefeff] hover:bg-[#e5e5e6] text-gray-600 font-bold rounded-3xl">
-                                      {packet.price} TL
-                                    </button>
-                                  </div>
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              className={`p-4 bg-[#e5e5e6] rounded-xl shadow-sm hover:bg-gray-100 flex flex-col sm:flex-row items-start sm:items-center gap-4 transition-all duration-200 mb-4 ${
+                                snapshot.isDragging
+                                  ? "border-2 border-blue-500 opacity-90 shadow-xl z-50"
+                                  : "border-2 border-transparent"
+                              }`}
+                              style={{
+                                ...provided.draggableProps.style,
+                                cursor: snapshot.isDragging ? "grabbing" : "grab",
+                                zIndex: snapshot.isDragging ? 1000 : "auto",
+                              }}
+                            >
+                              <span className="text-base sm:text-lg font-bold text-gray-800 w-8">
+                                {index + 1}
+                              </span>
+                              <div className="flex-1">
+                                <h3 className="font-semibold text-base sm:text-lg text-gray-800">
+                                  {packet.packet_title}
+                                </h3>
+                                <div className="mt-2 text-gray-600 text-xs sm:text-sm">
+                                  {packet.packet_content}
+                                </div>
+                                <div className="mt-2 text-gray-600 text-xs sm:text-sm">
+                                  {(packet.heryone_dk !== 0 ||
+                                    packet.heryone_sms !== 0 ||
+                                    packet.heryone_int !== 0) && (
+                                    <div>
+                                      <p>Heryöne {packet.heryone_dk} DK</p>
+                                      <p>Heryöne {packet.heryone_sms} SMS</p>
+                                      <p>Heryöne {packet.heryone_int} GB</p>
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="mt-4">
+                                  <button className="w-full sm:w-auto px-4 py-2 bg-white hover:bg-gray-100 text-gray-600 font-bold rounded-xl">
+                                    {packet.price} TL
+                                  </button>
                                 </div>
                               </div>
-                            );
-                          }}
+                            </div>
+                          )}
                         </Draggable>
                       ))}
                       {provided.placeholder}
@@ -633,18 +622,18 @@ const OperatorsPackets = () => {
                 </Droppable>
               </DragDropContext>
             ) : (
-              <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {memoizedPackets.map((packet) => (
                   <li
                     key={packet.id}
                     onClick={() => handlePacketClick(packet)}
-                    className="p-4 bg-[#e5e5e6] rounded-3xl shadow-sm hover:bg-gray-100 hover:shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 cursor-pointer flex flex-col justify-between"
+                    className="p-4 bg-[#e5e5e6] rounded-xl shadow-sm hover:bg-gray-100 hover:shadow-md transition-all duration-300 transform hover:scale-105 cursor-pointer flex flex-col justify-between"
                   >
-                    <h3 className="font-semibold text-lg sm:text-xl lg:text-2xl text-center text-gray-800">
+                    <h3 className="font-semibold text-base sm:text-lg text-gray-800 text-center">
                       {packet.packet_title}
                     </h3>
                     <div className="text-center mt-2">
-                      <p className="text-xs sm:text-sm lg:text-base text-gray-600">
+                      <p className="text-xs sm:text-sm text-gray-600">
                         {packet.packet_content}
                       </p>
                     </div>
@@ -653,20 +642,20 @@ const OperatorsPackets = () => {
                         packet.heryone_sms !== 0 ||
                         packet.heryone_int !== 0) && (
                         <div>
-                          <p className="text-xs sm:text-sm lg:text-base text-gray-600">
+                          <p className="text-xs sm:text-sm text-gray-600">
                             Heryöne {packet.heryone_dk} Dakika
                           </p>
-                          <p className="text-xs sm:text-sm lg:text-base text-gray-600">
+                          <p className="text-xs sm:text-sm text-gray-600">
                             Heryöne {packet.heryone_sms} SMS
                           </p>
-                          <p className="text-xs sm:text-sm lg:text-base text-gray-600">
+                          <p className="text-xs sm:text-sm text-gray-600">
                             Heryöne {packet.heryone_int} GB İnternet
                           </p>
                         </div>
                       )}
                     </div>
-                    <div className="mt-4 flex justify-center items-center text-xl w-full">
-                      <button className="w-full max-w-[150px] p-3 bg-[#fefeff] hover:bg-[#e5e5e6] text-gray-600 font-bold text-center rounded-3xl">
+                    <div className="mt-4 flex justify-center">
+                      <button className="w-full max-w-[120px] sm:max-w-[150px] p-2 sm:p-3 bg-white hover:bg-gray-100 text-gray-600 font-bold text-sm sm:text-base rounded-xl">
                         {packet.price} TL
                       </button>
                     </div>
@@ -682,7 +671,7 @@ const OperatorsPackets = () => {
         memoizedPackets.length === 0 &&
         !error &&
         !isAddingNewPacket && (
-          <p className="text-gray-500 text-sm">
+          <p className="text-gray-500 text-sm text-center">
             Bu operatöre ait paket bulunamadı.
           </p>
         )}

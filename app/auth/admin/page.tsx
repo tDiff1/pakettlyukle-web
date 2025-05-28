@@ -30,16 +30,13 @@ const AdminPage = () => {
   const [activePage, setActivePage] = useState(0);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isOtpSent, setIsOtpSent] = useState(false);
-  const [authenticatedUser, setAuthenticatedUser] = useState<string | null>(
-    null
-  );
+  const [authenticatedUser, setAuthenticatedUser] = useState<string | null>(null);
   const [data, setData] = useState<AdminInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [transitionClass, setTransitionClass] = useState(
-    "opacity-0 translate-y-5"
-  );
+  const [transitionClass, setTransitionClass] = useState("opacity-0 translate-y-5");
   const [error, setError] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // Hamburger menü durumu
 
   useEffect(() => {
     const authToken = localStorage.getItem("authToken");
@@ -181,7 +178,7 @@ const AdminPage = () => {
         localStorage.setItem("authToken", result.token);
         localStorage.setItem("authTimestamp", Date.now().toString());
         localStorage.setItem("authenticatedUser", authenticatedUser || "");
-        setTimeLeft(120 * 60 * 1000); // Set timer to 30 minutes
+        setTimeLeft(120 * 60 * 1000);
       } else {
         setError(result.error || "Hatalı OTP kodu!");
       }
@@ -189,6 +186,10 @@ const AdminPage = () => {
       console.error("OTP doğrulama hatası:", err);
       setError("OTP doğrulama başarısız. Lütfen tekrar deneyin.");
     }
+  };
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
   };
 
   if (isLoading) {
@@ -201,14 +202,25 @@ const AdminPage = () => {
 
   if (isAuthenticated) {
     return (
-      <div className="h-screen pt-10 relative">
-        <div className="absolute top-4 right-13 text-lg font-semibold text-red-500">
+      <div className="min-h-screen pt-10 relative">
+        <div className="absolute top-4 right-4 md:right-13 text-lg font-semibold text-red-500">
           Kalan Süre: {formatTimeLeft(timeLeft)}
         </div>
-        <div className="items-center justify-center flex flex-col"></div>
-        <div className="flex flex-row w-full h-[1100px]">
-          <div className="items-center justify-center flex flex-col w-1/5 space-y-3 ml-5">
-            <h1 className="text-3xl bg-gray-100 p-5 font-semibold mb-6 rounded-3xl">
+        <div className="flex flex-col md:flex-row w-full h-auto md:h-[1100px]">
+          {/* Hamburger Menü Butonu (Mobil için) */}
+          <div className="md:hidden flex items-center justify-between p-4 bg-gray-100">
+            <h1 className="text-xl font-semibold">Hoş Geldin {authenticatedUser}</h1>
+            <button onClick={toggleMenu} className="text-2xl">
+              {isMenuOpen ? "✖" : "☰"}
+            </button>
+          </div>
+          {/* Menü (Mobil: Hamburger, Masaüstü: Sidebar) */}
+          <div
+            className={`${
+              isMenuOpen ? "block" : "hidden"
+            } md:block w-full md:w-1/5 bg-gray-100 md:bg-transparent p-4 md:ml-5 space-y-3 md:flex-col md:items-center md:justify-center transition-all`}
+          >
+            <h1 className="hidden md:block text-3xl bg-gray-100 p-5 font-semibold mb-6 rounded-3xl">
               Hoş Geldin {authenticatedUser}
             </h1>
             {pages.map((pageName, index) => (
@@ -217,119 +229,101 @@ const AdminPage = () => {
                 className={`w-full text-lg font-semibold bg-red-600 hover:bg-red-700 text-white rounded-3xl py-4 px-6 text-center ${
                   activePage === index ? "ring-2 ring-black" : ""
                 }`}
-                onClick={() => setActivePage(index)}
+                onClick={() => {
+                  setActivePage(index);
+                  setIsMenuOpen(false); // Mobil menüyü kapat
+                }}
               >
                 {pageName}
               </button>
             ))}
           </div>
           <div
-            className={`bg-white w-3/4 rounded-3xl shadow-lg p-5 ml-5 transition-all duration-500 ease-in-out ${transitionClass} overflow-y-auto max-h-[1000px]`}
+            className={`bg-white w-full md:w-3/4 rounded-3xl shadow-lg p-5 md:ml-5 transition-all duration-500 ease-in-out ${transitionClass} overflow-y-auto max-h-[1000px]`}
           >
             {activePage === 0 && (
               <div>
-                <div className="flex space-x-5 mt-10">
+                <div className="flex flex-col md:flex-row space-y-5 md:space-y-0 md:space-x-5 mt-10">
                   <LogoUploader />
                   <FaviconUploader />
-                  {/* Sms Recipients Manager'ı buraya ekledim */}
                 </div>
                 <div className="mt-10">
                   <SmsRecipientsManager />
                 </div>
               </div>
             )}
-            {activePage === 1 && (
-              <div>
-                <div>
-                  <PageEdit />
-                </div>
-              </div>
-            )}
-            {activePage === 2 && (
-              <div>
-                <div>
-                  <OperatorsEdit />
-                </div>
-              </div>
-            )}
-            {activePage === 3 && (
-              <div>
-                <div>
-                  <OperatorsPackets />
-                </div>
-              </div>
-            )}
-            {activePage === 4 && (
-              <div>
-                <div>
-                  <BlogeEditPage />
-                </div>
-              </div>
-            )}
-            {activePage === 5 && (
-              <div>
-                <div>
-                  <PaymentsPage />
-                </div>
-              </div>
-            )}
+            {activePage === 1 && <PageEdit />}
+            {activePage === 2 && <OperatorsEdit />}
+            {activePage === 3 && <OperatorsPackets />}
+            {activePage === 4 && <BlogeEditPage />}
+            {activePage === 5 && <PaymentsPage />}
           </div>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
-      {!isOtpSent ? (
-        <form
-          onSubmit={handlePhoneSubmit}
-          className="bg-white p-8 rounded-lg shadow-md w-full max-w-md"
+return (
+  <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
+    {!isOtpSent ? (
+      <form
+        onSubmit={handlePhoneSubmit}
+        className="bg-white p-8 rounded-lg shadow-md w-full max-w-md"
+      >
+        <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
+          Telefon Numaranızı Giriniz
+        </h2>
+        <input
+          type="text"
+          value={phone}
+          onChange={(e) => {
+            const value = e.target.value.replace(/\D/g, ''); // Sadece sayıları tut
+            setPhone(value);
+          }}
+          placeholder="Telefon numaranızı giriniz (5xxxxxxxxx)"
+          className="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-green-500"
+          inputMode="numeric" // Mobil cihazlarda sayısal klavyeyi teşvik eder
+          maxLength={10} // 10 haneli telefon numarası için sınır
+        />
+        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+        <button
+          type="submit"
+          className="w-full bg-green-500 text-white py-3 rounded-lg font-semibold hover:bg-green-600 transition duration-300"
         >
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
-            Telefon Numaranızı Giriniz
-          </h2>
-          <input
-            type="text"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="Telefon numaranızı giriniz (5xxxxxxxxx)"
-            className="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-green-500"
-          />
-          {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-          <button
-            type="submit"
-            className="w-full bg-green-500 text-white py-3 rounded-lg font-semibold hover:bg-green-600 transition duration-300"
-          >
-            Doğrulama Kodu Gönder
-          </button>
-        </form>
-      ) : (
-        <form
-          onSubmit={handleOtpSubmit}
-          className="bg-white p-8 rounded-lg shadow-md w-full max-w-md"
+          Doğrulama Kodu Gönder
+        </button>
+      </form>
+    ) : (
+      <form
+        onSubmit={handleOtpSubmit}
+        className="bg-white p-8 rounded-lg shadow-md w-full max-w-md"
+      >
+        <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
+          SMS Doğrulama Kodunu Giriniz
+        </h2>
+        <input
+          type="text"
+          value={otpCode}
+          onChange={(e) => {
+            const value = e.target.value.replace(/\D/g, ''); // Sadece sayıları tut
+            setOtpCode(value);
+          }}
+          placeholder="6 haneli kodu giriniz"
+          className="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-green-500"
+          inputMode="numeric" // Mobil cihazlarda sayısal klavyeyi teşvik eder
+          maxLength={6} // 6 haneli OTP için sınır
+        />
+        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+        <button
+          type="submit"
+          className="w-full bg-green-500 text-white py-3 rounded-lg font-semibold hover:bg-green-600 transition duration-300"
         >
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
-            SMS Doğrulama Kodunu Giriniz
-          </h2>
-          <input
-            type="text"
-            value={otpCode}
-            onChange={(e) => setOtpCode(e.target.value)}
-            placeholder="6 haneli kodu giriniz"
-            className="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-green-500"
-          />
-          {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-          <button
-            type="submit"
-            className="w-full bg-green-500 text-white py-3 rounded-lg font-semibold hover:bg-green-600 transition duration-300"
-          >
-            Kodu Doğrula
-          </button>
-        </form>
-      )}
-    </div>
-  );
+          Kodu Doğrula
+        </button>
+      </form>
+    )}
+  </div>
+);
 };
 
 export default AdminPage;

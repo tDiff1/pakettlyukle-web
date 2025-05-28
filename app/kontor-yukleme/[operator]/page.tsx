@@ -368,30 +368,23 @@ export default function Page() {
                   <h3 className="font-bold text-lg sm:text-xl lg:text-2xl text-center text-orange-400">
                     {selectedPacket.packet_title}
                   </h3>
-                  <div className="text-center mt-4">
-                    <p className=" lg:text-base text-black font-semibold">
+                  <div className="text-center mt-4 ">
+                    <p className=" lg:text-base text-black font-bold">
                       {selectedPacket.packet_content}
                     </p>
                     {(selectedPacket.heryone_dk !== 0 ||
                       selectedPacket.heryone_sms !== 0 ||
                       selectedPacket.heryone_int !== 0) && (
-                      <div className="sm:text-sm lg:text-base text-black font-semibold">
-                        <p>
-                          Heryöne {selectedPacket.heryone_dk} Dakika
-                        </p>
-                        <p>
-                          Heryöne {selectedPacket.heryone_sms} SMS
-                        </p>
-                        <p>
-                          Heryöne {selectedPacket.heryone_int} GB İnternet
-                        </p>
+                      <div className="sm:text-sm lg:text-base text-black font-bold">
+                        <p>Heryöne {selectedPacket.heryone_dk} Dakika</p>
+                        <p>Heryöne {selectedPacket.heryone_sms} SMS</p>
+                        <p>Heryöne {selectedPacket.heryone_int} GB İnternet</p>
                       </div>
                     )}
-
-                    <p className="text-xl font-bold text-black mt-4 bg-orange-300">
-                      {selectedPacket.price} TL
-                    </p>
                   </div>
+                  <p className="text-xl font-bold text-black mt-4 w-fit p-1 px-6 bg-orange-300 rounded-2xl">
+                    {selectedPacket.price} TL
+                  </p>
                 </div>
               </div>
               {selectedPacket && (
@@ -423,7 +416,7 @@ export default function Page() {
                           {filteredPacket.packet_title}
                         </h3>
                         <div className="text-center mt-2">
-                          <p className=" lg:text-base text-black font-semibold">
+                          <p className=" lg:text-base text-black font-bold">
                             {filteredPacket.packet_content}
                           </p>
                         </div>
@@ -431,13 +424,9 @@ export default function Page() {
                           {(filteredPacket.heryone_dk !== 0 ||
                             filteredPacket.heryone_sms !== 0 ||
                             filteredPacket.heryone_int !== 0) && (
-                            <div className="sm:text-sm lg:text-base text-black font-semibold">
-                              <p>
-                                Heryöne {filteredPacket.heryone_dk} Dakika
-                              </p>
-                              <p>
-                                Heryöne {filteredPacket.heryone_sms} SMS
-                              </p>
+                            <div className="sm:text-sm lg:text-base text-black font-bold">
+                              <p>Heryöne {filteredPacket.heryone_dk} Dakika</p>
+                              <p>Heryöne {filteredPacket.heryone_sms} SMS</p>
                               <p>
                                 Heryöne {filteredPacket.heryone_int} GB İnternet
                               </p>

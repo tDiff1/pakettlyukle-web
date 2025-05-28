@@ -7,13 +7,11 @@ import Image from "next/image";
 export default function LogoUploader() {
   const [logoPath, setLogoPath] = useState("/logo/logo.png");
 
-  // En güncel logo URL'sini sunucudan al
   useEffect(() => {
     fetch("/api/logo-path")
       .then((res) => res.json())
       .then((data) => {
         if (data.filePath) {
-          // Cache bust için zaman damgası ekle
           setLogoPath(data.filePath + `?t=${Date.now()}`);
         }
       })
@@ -25,7 +23,6 @@ export default function LogoUploader() {
 
     const file = acceptedFiles[0];
 
-    // Yalnızca resim dosyalarına izin ver
     if (!file.type.startsWith("image/")) {
       alert("Lütfen geçerli bir resim dosyası yükleyin.");
       return;
@@ -41,7 +38,6 @@ export default function LogoUploader() {
 
     if (res.ok) {
       const data = await res.json();
-      // Yeni logo URL'sini ayarla, cache bust
       setLogoPath(data.filePath + `?t=${Date.now()}`);
       alert("Logo güncellendi!");
     } else {
@@ -55,23 +51,23 @@ export default function LogoUploader() {
   });
 
   return (
-    <div className="p-4 rounded-xl items-center gap-10 bg-[#e5e5e6]">
-      <div className="mt-4 justify-center flex flex-col items-center">
+    <div className="p-4 sm:p-6 md:p-8 rounded-xl bg-[#e5e5e6] flex flex-col items-center w-full">
+      <div className="mt-4 flex flex-col items-center">
         <h3 className="text-lg font-semibold">Güncel Logo</h3>
         <Image
           src={logoPath}
           alt="Güncel Logo"
           width={128}
           height={128}
-          className="rounded-lg mt-2"
+          className="rounded-lg mt-2 w-24 h-24 sm:w-32 sm:h-32 object-contain"
         />
       </div>
       <div
         {...getRootProps()}
-        className="p-16 cursor-pointer border border-dashed border-green-600"
+        className="w-full p-8 sm:p-12 md:p-16 cursor-pointer border-2 border-dashed border-green-600 text-center mt-4"
       >
         <input {...getInputProps()} />
-        <p>Yeni logo dosyanı buraya sürükle veya tıkla</p>
+        <p className="text-sm sm:text-base">Yeni logo dosyanı buraya sürükle veya tıkla</p>
       </div>
     </div>
   );
