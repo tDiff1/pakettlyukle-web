@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { put } from "@vercel/blob";
-import { frame } from "framer-motion";
 
 const prisma = new PrismaClient({
   datasources: {
