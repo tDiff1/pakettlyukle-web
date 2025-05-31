@@ -193,7 +193,7 @@ export default function Home() {
           </div>
 
           {/* Operatör Seçimi */}
-          <div className="bg-white p-3 sm:p-4 md:p-6 rounded-3xl shadow-md my-4 sm:my-5 w-full max-w-4xl">
+          <div className="bg-white p-3 sm:p-4 md:p-7 rounded-3xl shadow-md my-4 sm:my-5 w-full max-w-4xl">
             <MyCarousel />
           </div>
 
@@ -296,26 +296,35 @@ export default function Home() {
           {/* Operatör Resmi*/}
           <div className="flex flex-col md:flex-row justify-between items-center w-full max-w-6xl bg-white p-6 rounded-3xl shadow-md my-6">
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 w-full">
-              {operators.map((operator) => (
-                <div
-                  key={operator.id}
-                  className="bg-[#e5e5e6] text-white p-4 rounded-xl mx-1 h-full flex items-center justify-center hover:scale-105 transform transition-transform duration-500 ease-in-out"
-                  style={{ minHeight: "120px" }}
-                >
-                  <Link
-                    href={`/kontor-yukleme/${operator.idName}`}
-                    className="flex flex-col items-center justify-center w-full h-full gap-2"
+              {operators.map((operator) => {
+                const formattedIdName =
+                  operator.idName.charAt(0).toUpperCase() +
+                  operator.idName.slice(1).toLowerCase();
+
+                return (
+                  <div
+                    key={operator.id}
+                    className="bg-[#e5e5e6] text-white p-4 rounded-xl mx-1 h-full flex items-center justify-center hover:scale-105 transform transition-transform duration-500 ease-in-out"
+                    style={{ minHeight: "120px" }}
                   >
-                    <Image
-                      src={`https://9p0znkmu3n4ej0xg.public.blob.vercel-storage.com/pakettlyukle/operatorler/${operator.imageID}`}
-                      alt={`${operator.idName}`}
-                      width={128}
-                      height={64}
-                      className="object-contain"
-                    />
-                  </Link>
-                </div>
-              ))}
+                    <Link
+                      href={`/kontor-yukleme/${operator.idName}`}
+                      className="flex flex-col items-center justify-center w-full h-full gap-2"
+                    >
+                      <Image
+                        src={`https://9p0znkmu3n4ej0xg.public.blob.vercel-storage.com/pakettlyukle/operatorler/${operator.imageID}`}
+                        alt={`${operator.idName}`}
+                        width={128}
+                        height={64}
+                        className="object-contain"
+                      />
+                      <p className="text-black text-sm font-semibold text-center">
+                        {formattedIdName} Paket TL Yükle
+                      </p>
+                    </Link>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

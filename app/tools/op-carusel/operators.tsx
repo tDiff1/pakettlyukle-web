@@ -67,6 +67,7 @@ export default function MyCarousel() {
       )
       .catch((err) => console.error("Veri alınamadı:", err));
   }, []);
+
   return (
     <div className="relative">
       <Carousel
@@ -88,30 +89,35 @@ export default function MyCarousel() {
         dotListClass="custom-dot-list-style"
         itemClass="px-2"
       >
-        {data.map((operator) => (
-          <div
-            key={operator.id}
-            className={`bg-[#e5e5e6] ${operator.hover}  shadow-md text-white p-10 rounded-xl mx-1 h-full flex items-center justify-center hover:scale-105 transform transition-transform duration-500 ease-in-out`}
-            style={{ minHeight: "120px" }} // Minimum yükseklik
-          >
-            <Link
-              href={`/kontor-yukleme/${operator.idName}`}
-              className="flex flex-col items-center justify-center w-full h-full gap-2"
+        {data.map((operator) => {
+          const formattedIdName =
+            operator.idName.charAt(0).toUpperCase() +
+            operator.idName.slice(1).toLowerCase();
+
+          return (
+            <div
+              key={operator.id}
+              className={`bg-[#e5e5e6] ${operator.hover} shadow-md text-white p-7 rounded-xl mx-1 h-full flex items-center justify-center hover:scale-105 transform transition-transform duration-500 ease-in-out`}
+              style={{ minHeight: "120px" }}
             >
-              <div className="relative w-96 h-20">
-                {" "}
-                {/* Sabit resim boyutu */}
-                <Image
-                  src={`https://9p0znkmu3n4ej0xg.public.blob.vercel-storage.com/pakettlyukle/operatorler/${operator.imageID}`}
-                  fill
-                  className="object-contain"
-                  alt={`${operator.idName}`}
-                  priority
-                />
-              </div>
-            </Link>
-          </div>
-        ))}
+              <Link
+                href={`/kontor-yukleme/${operator.idName}`}
+                className="flex flex-col items-center justify-center w-full h-full gap-2"
+              >
+                <div className="relative w-96 h-20">
+                  <Image
+                    src={`https://9p0znkmu3n4ej0xg.public.blob.vercel-storage.com/pakettlyukle/operatorler/${operator.imageID}`}
+                    fill
+                    className="object-contain"
+                    alt={formattedIdName}
+                    priority
+                  />
+                </div>
+                <p className="text-black  text-md font-semibold">{formattedIdName} Paket TL Yükle</p>
+              </Link>
+            </div>
+          );
+        })}
       </Carousel>
     </div>
   );

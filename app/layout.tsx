@@ -1,10 +1,10 @@
 import { Noto_Sans } from "next/font/google";
 import "./globals.css";
 import LayoutWrapper from "@/components/LayoutWrapper";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import { FaviconUpdater } from "@/components/favicon-updater";
 import { Metadata } from "next";
+import Script from "next/script"; // Clarity için eklendi
 
 const notoSans = Noto_Sans({
   variable: "--font-noto-sans",
@@ -16,13 +16,12 @@ export async function generateMetadata(): Promise<Metadata> {
   let logoUrl = "https://pakettlyukle.com/logo/logo.png"; // fallback
 
   try {
-    // Blob API'den resmi çek
     const res = await fetch("https://pakettlyukle.com/api/logo-path", {
-      next: { revalidate: 60 }, // ISR için
+      next: { revalidate: 60 },
     });
     const data = await res.json();
     if (data?.filePath) {
-      logoUrl = data.filePath; // örn: https://vercel.com/...
+      logoUrl = data.filePath;
     }
   } catch (error) {
     console.error("Logo alınamadı:", error);
@@ -74,12 +73,25 @@ export default function RootLayout({
 }) {
   return (
     <html lang="tr">
-      <FaviconUpdater />
+      <head>
+        {/* Microsoft Clarity Script */}
+        <Script
+          id="clarity-script"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `(function(c,l,a,r,i,t,y){
+              c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+              t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+              y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+            })(window, document, "clarity", "script", "rs2g0cyb10");`,
+          }}
+        />
+      </head>
       <body
         className={`${notoSans.variable} antialiased bg-[var(--background)] text-[var(--foreground)]`}
       >
+        <FaviconUpdater />
         <LayoutWrapper>{children}</LayoutWrapper>
-        <SpeedInsights />
         <Analytics />
       </body>
     </html>
