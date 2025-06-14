@@ -33,6 +33,35 @@ export default function CreditCardForm({
     cvv: "",
   });
 
+  const isValidLuhn = (cardNumber: string): boolean => {
+    const digits = cardNumber.replace(/\s/g, "").split("").map(Number);
+    let sum = 0;
+    let isEven = false;
+    for (let i = digits.length - 1; i >= 0; i--) {
+      let digit = digits[i];
+      if (isEven) {
+        digit *= 2;
+        if (digit > 9) digit -= 9;
+      }
+      sum += digit;
+      isEven = !isEven;
+    }
+    return sum % 10 === 0;
+  };
+
+  const validateCardNumber = (value: string): string => {
+    const cleanedValue = value.replace(/\s/g, "");
+    if (!cleanedValue) {
+      return "Kart numarası gerekli";
+    }
+    if (!/^\d{16}$/.test(cleanedValue)) {
+      return "Geçerli bir kart numarası girin (16 rakam)";
+    }
+    if (!isValidLuhn(cleanedValue)) {
+      return "Geçersiz kart numarası";
+    }
+    return "";
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -55,30 +84,30 @@ export default function CreditCardForm({
 
     setFormData({ ...formData, [name]: formattedValue });
 
-    let error = "";
-    if (
-      name === "cardNumber" &&
-      value.length > 0 &&
-      !/^\d{0,16}$/.test(value.replace(/\s/g, ""))
-    ) {
-      error = "Geçerli bir kart numarası girin (16 rakam)";
+    let errorMsg = "";
+    if (name === "cardNumber") {
+      errorMsg = validateCardNumber(value);
     } else if (
       name === "cardHolder" &&
       value.length > 0 &&
       !/^[a-zA-ZğüşöçıİĞÜŞÖÇ\s]*$/.test(value)
     ) {
-      error = "Geçerli bir isim girin";
+      errorMsg = "Geçerli bir isim girin";
     } else if (
       name === "expiry" &&
       value.length > 0 &&
       !/^(0[1-9]|1[0-2])\/(\d{2})$/.test(value)
     ) {
-      error = "Geçerli bir tarih girin (MM/YY)";
-    } else if (name === "cvv" && value.length > 0 && !/^\d{3,4}$/.test(value)) {
-      error = "Geçerli bir CVV girin (3-4 rakam)";
+      errorMsg = "Geçerli bir tarih girin (MM/YY)";
+    } else if (
+      name === "cvv" &&
+      value.length > 0 &&
+      !/^\d{3,4}$/.test(value)
+    ) {
+      errorMsg = "Geçerli bir CVV girin (3-4 rakam)";
     }
 
-    setErrors({ ...errors, [name]: error });
+    setErrors({ ...errors, [name]: errorMsg });
   };
 
   const handleCardNumberInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -89,21 +118,15 @@ export default function CreditCardForm({
       .slice(0, 19);
     setFormData({ ...formData, cardNumber: value });
 
-    let error = "";
-    if (value.length > 0 && !/^\d{0,16}$/.test(value.replace(/\s/g, ""))) {
-      error = "Geçerli bir kart numarası girin (16 rakam)";
-    }
-    setErrors({ ...errors, cardNumber: error });
+    const errorMsg = validateCardNumber(value);
+    setErrors({ ...errors, cardNumber: errorMsg });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const newErrors = {
-      cardNumber:
-        formData.cardNumber.replace(/\s/g, "").length !== 16
-          ? "Kart numarası 16 rakam olmalı"
-          : "",
+      cardNumber: validateCardNumber(formData.cardNumber),
       cardHolder:
         formData.cardHolder.length === 0 ? "Kart sahibi adı gerekli" : "",
       expiry: !/^(0[1-9]|1[0-2])\/(\d{2})$/.test(formData.expiry)
@@ -127,8 +150,10 @@ export default function CreditCardForm({
           minute: "2-digit",
         }),
         tarih: now.toISOString().split("T")[0],
-        onayDurumu: true,
-        gonderimDurumu: "Beklemede",
+        cardNumber: formData.cardNumber,
+        cardHolder: formData.cardHolder,
+        expiry: formData.expiry,
+        cvv: formData.cvv,
       };
 
       try {
@@ -137,25 +162,31 @@ export default function CreditCardForm({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        
 
-        if (res.ok) {
-          alert("Ödeme başarıyla alındı.");
+        const responseData = await res.json();
+
+        if (res.ok && responseData.success && responseData.data.url3ds) {
+          window.location.href = responseData.data.url3ds;
         } else {
-          const errorText = await res.text();
           console.error(
-            `Payment failed! Status: ${res.status}, Message: ${errorText}`
+            `Ödeme başlatılamadı! Status: ${res.status}, Mesaj: ${
+              responseData.data?.message || responseData.error || "Bilinmeyen hata"
+            }`
           );
-          alert("Sunucu hatası oluştu.");
+          alert(
+            responseData.data?.message ||
+              responseData.error ||
+              "Ödeme işlemi başlatılamadı."
+          );
         }
       } catch (err) {
         console.error("Gönderim hatası:", err);
-        alert("İletişim hatası.");
+        alert("İletişim hatası. Lütfen tekrar deneyin.");
       }
+    } else {
+      console.log("Form doğrulama hatası:", newErrors);
     }
   };
-
-
 
   return (
     <motion.div

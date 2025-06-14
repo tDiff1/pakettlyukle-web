@@ -81,17 +81,18 @@ model OtpCode {
 }
 
 model Payment {
-  id             Int      @id @default(autoincrement())
-  musteriNo      String
-  operator       String
-  paket          String
-  paketid        Int
-  tutar          Float
-  saat           String
-  tarih          String
-  onayDurumu     Boolean
-  gonderimDurumu String
-  createdAt      DateTime @default(now())
+  id              Int       @id @default(autoincrement())
+  musteriNo       String
+  operator        String
+  paket           String
+  paketid         Int
+  tutar           Float
+  saat            String
+  tarih           String
+  onayDurumu      Boolean
+  gonderimDurumu  String
+  clientOrderId   String?   @unique
+  createdAt       DateTime  @default(now())
 }
 
 model Blog {

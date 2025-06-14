@@ -1,11 +1,9 @@
-// app/api/payments/route.ts
 import { PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 
 const prisma = new PrismaClient();
 
-// Yeniden deneme fonksiyonu
 async function fetchWithRetry(
   url: string,
   options: RequestInit,
@@ -15,7 +13,7 @@ async function fetchWithRetry(
   for (let i = 0; i < retries; i++) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 saniye timeout
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
       const response = await fetch(url, {
         ...options,
         signal: controller.signal,
@@ -55,94 +53,36 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const {
-      cardNumber,
-      cardHolder,
-      expiry,
-      cvv,
-      amount,
       musteriNo,
       operator,
       paket,
       paketid,
+      tutar: amount,
       saat,
       tarih,
-      onayDurumu,
-      gonderimDurumu,
+      cardNumber,
+      cardHolder,
+      expiry,
+      cvv,
     } = body;
 
-    // 1. Token al
-    const tokenRes = await fetchWithRetry(
-      `${process.env.EFIXPAY_BASE_URL}/auth/merchant`, // veya doğru endpoint
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          apiKey: "50d54b52fa7c4284bcfef7409b520763",
-          apiSecret: "ad809e9bb8ca4fbf85820668c4b4ae757f39cabc28b5449eaf43d4d93e336a8a",
-        }),
-      }
-    );
-    console.log("İstek yapılan URL:", `${process.env.EFIXPAY_BASE_URL}/auth/merchant`);
-    console.log("HTTP Durumu:", tokenRes.status);
-    const text = await tokenRes.text();
-    console.log("API Yanıtı:", text || "Boş yanıt");
-    if (!tokenRes.ok)
-      throw new Error(
-        `API Hatası: ${tokenRes.status} - ${text || "Yanıt yok"}`
-      );
-      
-    const tokenData = await tokenRes.json();
+    const API_URL =
+      process.env.EFIXPAY_BASE_URL || "https://vpos.efixfatura.com.tr/api";
 
-    const token = tokenData.token;
+    if (!cardNumber || cardNumber.replace(/\s/g, "").length !== 16) {
+      throw new Error("Geçersiz kart numarası");
+    }
+    if (!cvv || !/^\d{3,4}$/.test(cvv)) {
+      throw new Error("Geçersiz CVV");
+    }
+    if (!expiry || !/^(0[1-9]|1[0-2])\/(\d{2})$/.test(expiry)) {
+      throw new Error("Geçersiz son kullanma tarihi");
+    }
 
-    // 2. İşlem Detayı Ekle
-    const clientOrderId = Date.now().toString();
-    const detailRes = await fetchWithRetry(
-      `${process.env.EFIXPAY_BASE_URL}/transactions/add-transactions-detail`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Token: token,
-        },
-        body: JSON.stringify({
-          clientOrderId,
-          totalAmount: amount,
-        }),
-      }
-    );
-    if (!detailRes.ok) throw new Error("İşlem detayı eklenemedi");
+    const [month, year] = expiry.split("/");
+    const expiryDate = `20${year}${month}`;
 
-    // 3. Ödeme Başlat
-    const startRes = await fetchWithRetry(
-      `${process.env.EFIXPAY_BASE_URL}/transactions/checkout`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Token: token,
-        },
-        body: JSON.stringify({
-          amount,
-          language: "TR",
-          successUrl: "http://localhost:3000/success",
-          cancelUrl: "http://localhost:3000/cancel",
-          declineUrl: "http://localhost:3000/decline",
-          clientOrderId,
-          currency: "TRY",
-          Cvv: cvv,
-          Pan: cardNumber.replace(/\s/g, ""),
-          ExpiryDate: expiry.replace("/", ""),
-          CardOwner: cardHolder,
-          InstallmentCount: 1,
-        }),
-      }
-    );
-    const startData = await startRes.json();
-    if (!startRes.ok)
-      throw new Error(startData.message || "Ödeme başlatılamadı");
-
-    // 4. Ödeme Kaydet
+    const clientOrderId = `ORDER-${Date.now()}-${musteriNo.replace(/\s/g, "")}`;
     const payment = await prisma.payment.create({
       data: {
         musteriNo,
@@ -152,60 +92,126 @@ export async function POST(request: Request) {
         tutar: parseFloat(amount),
         saat,
         tarih,
-        onayDurumu: onayDurumu ?? true,
-        gonderimDurumu: gonderimDurumu ?? "Beklemede",
+        onayDurumu: false,
+        gonderimDurumu: "",
+        clientOrderId,
       },
     });
 
-    // 5. SMS Gönder
-    const recipients = await prisma.smsRecipient.findMany({
-      select: { id: true, phone: true },
+    const tokenRes = await fetchWithRetry(`${API_URL}/auth/merchant`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        apiKey: process.env.EFIX_API_KEY || "50d54b52fa7c4284bcfef7409b520763",
+        apiSecret:
+          process.env.EFIX_API_SECRET ||
+          "ad809e9bb8ca4fbf85820668c4b4ae757f39cabc28b5449eaf43d4d93e336a8a",
+      }),
     });
-    const phones = recipients.map((r) => {
-      const phone = r.phone.replace(/\s/g, "");
-      return phone.startsWith("0") ? `90${phone.slice(1)}` : `90${phone}`;
-    });
+    if (!tokenRes.ok) {
+      throw new Error(`Token alınamadı: ${await tokenRes.text()}`);
+    }
+    const tokenData = await tokenRes.json();
+    const token = tokenData.token;
 
-    const message = `Yeni ödeme: ${payment.musteriNo} numaralı müşteri,\nPaket ismi: ${payment.paket},\nPaket tutarı: ${payment.tutar},\nSatın alma tarihi: ${payment.tarih} ${payment.saat}`;
-    if (phones.length > 0) {
-      const xml = `<?xml version="1.0"?>
-      <mainbody>
-        <header>
-          <usercode>${process.env.NETGSM_USERCODE}</usercode>
-          <password>${process.env.NETGSM_PASSWORD}</password>
-          <startdate></startdate>
-          <stopdate></stopdate>
-          <type>1:n</type>
-          <msgheader>${process.env.NETGSM_MSGHEADER}</msgheader>
-        </header>
-        <body>
-          <msg><![CDATA[${message}]]></msg>
-          ${phones.map((phone) => `<no>${phone}</no>`).join("")}
-        </body>
-      </mainbody>`;
-
-      const smsRes = await fetchWithRetry(
-        "https://api.netgsm.com.tr/sms/send/xml",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/xml" },
-          body: xml,
-        }
-      );
-      const resultText = await smsRes.text();
-      if (!resultText.startsWith("00")) {
-        console.error("NetGSM API Hatası:", resultText);
+    const detailRes = await fetchWithRetry(
+      `${API_URL}/transactions/add-transactions-detail`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          clientOrderId,
+          totalAmount: amount,
+        successUrl: `${process.env.DOMAIN || 'http://localhost:3000'}/api/payments/callback`,
+        cancelUrl: `${process.env.DOMAIN || 'http://localhost:3000'}/api/payments/callback`,
+        declineUrl: `${process.env.DOMAIN || 'http://localhost:3000'}/api/payments/callback`,
+        // successUrl: `http://localhost:3000/api/payments/callback`,
+        // cancelUrl: `http://localhost:3000/api/payments/callback`,
+        // declineUrl: `http://localhost:3000/api/payments/callback`,
+        }),
       }
+    );
+    if (!detailRes.ok) {
+      throw new Error(`İşlem detayı eklenemedi: ${await detailRes.text()}`);
     }
 
-    return NextResponse.json(
-      { success: true, payment, data: startData },
-      { status: 201 }
+    const startRes = await fetchWithRetry(`${API_URL}/transactions/checkout`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        amount,
+        language: "TR",
+        successUrl: `${process.env.DOMAIN || 'http://localhost:3000'}/api/payments/callback`,
+        cancelUrl: `${process.env.DOMAIN || 'http://localhost:3000'}/api/payments/callback`,
+        declineUrl: `${process.env.DOMAIN || 'http://localhost:3000'}/api/payments/callback`,
+        // successUrl: `http://localhost:3000/api/payments/callback`,
+        // cancelUrl: `http://localhost:3000/api/payments/callback`,
+        // declineUrl: `http://localhost:3000/api/payments/callback`,
+        clientOrderId,
+        currency: "TRY",
+        Cvv: cvv,
+        Pan: cardNumber.replace(/\s/g, ""),
+        ExpiryDate: expiryDate,
+        CardOwner: cardHolder,
+        InstallmentCount: 1,
+        merchantId: "20250120",
+        subMerchantId: "20250120",
+      }),
+    });
+    const startData = await startRes.json();
+    console.log(
+      "Checkout API Yanıtı:",
+      startData,
+      "HTTP Durumu:",
+      startRes.status
     );
+
+    if (startRes.ok && startData.url3ds) {
+      return NextResponse.json(
+        {
+          success: true,
+          payment,
+          data: {
+            id: payment.id,
+            status: "Pending",
+            transactionId: startData.transactionId,
+            url3ds: startData.url3ds,
+            actionUrl: startData.actionUrl,
+          },
+        },
+        { status: 201 }
+      );
+    } else {
+      await prisma.payment.update({
+        where: { id: payment.id },
+        data: {
+          onayDurumu: false,
+          gonderimDurumu: "Reddedildi",
+        },
+      });
+      return NextResponse.json(
+        {
+          success: false,
+          payment,
+          data: {
+            id: payment.id,
+            status: "Failed",
+            message: startData.message || "Ödeme başlatılamadı",
+          },
+        },
+        { status: 400 }
+      );
+    }
   } catch (error) {
-    console.error("Hata:", error);
+    console.error("POST hata:", error);
     return NextResponse.json(
-      { success: false, error: error },
+      { success: false, error: "Ödeme işlemi başarısız. Hata: " + error },
       { status: 500 }
     );
   } finally {
@@ -214,13 +220,39 @@ export async function POST(request: Request) {
 }
 
 interface RouteContext {
-  params: Promise<{ id: string }>; // params'ı Promise olarak tanımla
+  params: Promise<{ id: string }>;
+}
+
+export async function PATCH(req: Request, { params }: RouteContext) {
+  try {
+    const id = parseInt((await params).id, 10);
+    if (isNaN(id)) {
+      return NextResponse.json({ error: "Geçersiz ID" }, { status: 400 });
+    }
+
+    const body = await req.json();
+
+    const updated = await prisma.payment.update({
+      where: { id },
+      data: {
+        onayDurumu: body.onayDurumu,
+        gonderimDurumu: body.gonderimDurumu,
+      },
+    });
+
+    return NextResponse.json(updated);
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Ödeme güncellenemedi. Hata: " + error },
+      { status: 500 }
+    );
+  }
 }
 
 export async function DELETE(req: NextRequest, { params }: RouteContext) {
   try {
-    const resolvedParams = await params; // Promise'ı çöz
-    const id = parseInt(resolvedParams.id, 10); // id'yi al
+    const resolvedParams = await params;
+    const id = parseInt(resolvedParams.id, 10);
     if (isNaN(id)) {
       return NextResponse.json({ error: "Geçersiz ID" }, { status: 400 });
     }

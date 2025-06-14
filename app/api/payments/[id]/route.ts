@@ -7,10 +7,11 @@ interface RouteContext {
   params: Promise<{ id: string }>; // params Promise olarak tanımlı
 }
 
-export async function PATCH(req: NextRequest, { params }: RouteContext) {
+
+export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
-    const resolvedParams = await params;
-    const id = parseInt(resolvedParams.id, 10);
+    const params = await context.params;
+    const id = parseInt(params.id, 10); // ✅ string → number dönüşümü
     if (isNaN(id)) {
       return NextResponse.json({ error: "Geçersiz ID" }, { status: 400 });
     }
@@ -19,16 +20,22 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
 
     const updated = await prisma.payment.update({
       where: { id },
-      data: { gonderimDurumu: body.gonderimDurumu },
+      data: {
+        onayDurumu: body.onayDurumu,
+        gonderimDurumu: body.gonderimDurumu,
+      },
     });
 
     return NextResponse.json(updated);
-  } catch {
-    return NextResponse.json({ error: "Güncelleme hatası" }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Ödeme güncellenemedi. Hata: " + error },
+      { status: 500 }
+    );
   }
 }
+
+
 
 export async function DELETE(req: NextRequest, { params }: RouteContext) {
   try {
