@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
     }
 
     // let redirectUrl = `http://localhost:3000/cancel`;
-    let redirectUrl = `${process.env.DOMAIN || 'http://localhost:3000'}/cancel`;
+    let redirectUrl = `${process.env.DOMAIN}/cancel`;
 
     if (payment) {
       let updatedPayment;
@@ -62,6 +62,7 @@ export async function GET(req: NextRequest) {
             onayDurumu: true,
             gonderimDurumu: "Beklemede",
           },
+          
         });
 
         const smsContent = `Yeni ödeme: ${updatedPayment.musteriNo} numaralı müşteri,\nPaket: ${updatedPayment.paket},\nTutar: ${updatedPayment.tutar},\nSipariş numarası: ${updatedPayment.clientOrderId || ''}\nTarih: ${updatedPayment.tarih} ${updatedPayment.saat} B023`.slice(0, 160);
@@ -117,7 +118,7 @@ export async function GET(req: NextRequest) {
           console.log("SMS gönderilecek telefon numarası bulunamadı.");
         }
 
-        redirectUrl = `${process.env.DOMAIN || 'http://localhost:3000'}/success?paket=${encodeURIComponent(updatedPayment.paket)}&tutar=${updatedPayment.tutar}&musteriNo=${encodeURIComponent(updatedPayment.musteriNo)}&order=${encodeURIComponent(updatedPayment.clientOrderId || '')}`;
+        redirectUrl = `${process.env.DOMAIN}/success?paket=${encodeURIComponent(updatedPayment.paket)}&tutar=${updatedPayment.tutar}&musteriNo=${encodeURIComponent(updatedPayment.musteriNo)}&order=${encodeURIComponent(updatedPayment.clientOrderId || '')}`;
       } else if (status === "CANCEL" || status === "ERROR") {
         updatedPayment = await prisma.payment.update({
           where: { id: payment.id },
@@ -126,7 +127,7 @@ export async function GET(req: NextRequest) {
             gonderimDurumu: "Reddedildi",
           },
         });
-
+        
         const smsContent = `Ödeme iptal edildi: ${updatedPayment.musteriNo} numaralı müşteri,\nPaket: ${updatedPayment.paket},\nTutar: ${updatedPayment.tutar} TRY,\nSipariş numarası: ${updatedPayment.clientOrderId || ''}\nTarih: ${updatedPayment.tarih} ${updatedPayment.saat}`.slice(0, 160);
 
         const recipients = await prisma.smsRecipient.findMany({
@@ -180,7 +181,7 @@ export async function GET(req: NextRequest) {
           console.log("SMS gönderilecek telefon numarası bulunamadı.");
         }
 
-        redirectUrl = `${process.env.DOMAIN || 'http://localhost:3000'}/cancel?paket=${encodeURIComponent(updatedPayment.paket)}&tutar=${updatedPayment.tutar}&musteriNo=${encodeURIComponent(updatedPayment.musteriNo)}&order=${encodeURIComponent(updatedPayment.clientOrderId || '')}`;
+        redirectUrl = `${process.env.DOMAIN}/cancel?paket=${encodeURIComponent(updatedPayment.paket)}&tutar=${updatedPayment.tutar}&musteriNo=${encodeURIComponent(updatedPayment.musteriNo)}&order=${encodeURIComponent(updatedPayment.clientOrderId || '')}`;
       } else if (status === "DECLINE") {
         updatedPayment = await prisma.payment.update({
           where: { id: payment.id },
@@ -189,23 +190,23 @@ export async function GET(req: NextRequest) {
             gonderimDurumu: "Reddedildi",
           },
         });
-        redirectUrl = `${process.env.DOMAIN || 'http://localhost:3000'}/decline?paket=${encodeURIComponent(updatedPayment.paket)}&tutar=${updatedPayment.tutar}&musteriNo=${encodeURIComponent(updatedPayment.musteriNo)}&order=${encodeURIComponent(updatedPayment.clientOrderId || '')}`;
+        redirectUrl = `${process.env.DOMAIN}/decline?paket=${encodeURIComponent(updatedPayment.paket)}&tutar=${updatedPayment.tutar}&musteriNo=${encodeURIComponent(updatedPayment.musteriNo)}&order=${encodeURIComponent(updatedPayment.clientOrderId || '')}`;
       }
     } else {
       console.log(`Ödeme kaydı bulunamadı: clientOrderId=${clientOrderId}, data=${data}, status=${status}`);
       if (status === "SUCCESS") {
-        redirectUrl = `${process.env.DOMAIN || 'http://localhost:3000'}/success`;
+        redirectUrl = `${process.env.DOMAIN}/success`;
       } else if (status === "ERROR" || status === "CANCEL") {
-        redirectUrl = `${process.env.DOMAIN || 'http://localhost:3000'}/cancel`;
+        redirectUrl = `${process.env.DOMAIN}/cancel`;
       } else if (status === "DECLINE") {
-        redirectUrl = `${process.env.DOMAIN || 'http://localhost:3000'}/decline`;
+        redirectUrl = `${process.env.DOMAIN}/decline`;
       }
     }
 
     return NextResponse.redirect(redirectUrl);
   } catch (error) {
     console.error("Callback GET hata:", error);
-    return NextResponse.redirect(`${process.env.DOMAIN || 'http://localhost:3000'}/cancel`);
+    return NextResponse.redirect(`${process.env.DOMAIN}/cancel`);
   } finally {
     await prisma.$disconnect();
   }
@@ -236,7 +237,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    let redirectUrl = `${process.env.DOMAIN || 'http://localhost:3000'}/cancel`;
+    let redirectUrl = `${process.env.DOMAIN}/cancel`;
     let updatedPayment;
 
     if (status === "Success") {
@@ -301,7 +302,7 @@ export async function POST(req: NextRequest) {
         console.log("SMS gönderilecek telefon numarası bulunamadı.");
       }
 
-      redirectUrl = `${process.env.DOMAIN || 'http://localhost:3000'}/success?paket=${encodeURIComponent(updatedPayment.paket)}&tutar=${updatedPayment.tutar}&musteriNo=${encodeURIComponent(updatedPayment.musteriNo)}&order=${encodeURIComponent(updatedPayment.clientOrderId || '')}`;
+      redirectUrl = `${process.env.DOMAIN}/success?paket=${encodeURIComponent(updatedPayment.paket)}&tutar=${updatedPayment.tutar}&musteriNo=${encodeURIComponent(updatedPayment.musteriNo)}&order=${encodeURIComponent(updatedPayment.clientOrderId || '')}`;
     } else if (status === "Cancel" || status === "Decline") {
       updatedPayment = await prisma.payment.update({
         where: { id: payment.id },
@@ -310,7 +311,7 @@ export async function POST(req: NextRequest) {
           gonderimDurumu: "Reddedildi",
         },
       });
-
+      
       const smsContent = `Ödeme iptal edildi: ${updatedPayment.musteriNo} numaralı müşteri,\nPaket: ${updatedPayment.paket},\nTutar: ${updatedPayment.tutar} TRY,\nSipariş numarası: ${updatedPayment.clientOrderId || ''}\nTarih: ${updatedPayment.tarih} ${updatedPayment.saat}`.slice(0, 160);
 
       const recipients = await prisma.smsRecipient.findMany({
@@ -364,7 +365,7 @@ export async function POST(req: NextRequest) {
         console.log("SMS gönderilecek telefon numarası bulunamadı.");
       }
 
-      redirectUrl = `${process.env.DOMAIN || 'http://localhost:3000'}/cancel?paket=${encodeURIComponent(updatedPayment.paket)}&tutar=${updatedPayment.tutar}&musteriNo=${encodeURIComponent(updatedPayment.musteriNo)}&order=${encodeURIComponent(updatedPayment.clientOrderId || '')}`;
+      redirectUrl = `${process.env.DOMAIN}/cancel?paket=${encodeURIComponent(updatedPayment.paket)}&tutar=${updatedPayment.tutar}&musteriNo=${encodeURIComponent(updatedPayment.musteriNo)}&order=${encodeURIComponent(updatedPayment.clientOrderId || '')}`;
     }
 
     return NextResponse.json(

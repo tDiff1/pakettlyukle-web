@@ -69,6 +69,9 @@ export async function POST(request: Request) {
     const API_URL =
       process.env.EFIXPAY_BASE_URL || "https://vpos.efixfatura.com.tr/api";
 
+
+      console.log("DOMAIN:", process.env.DOMAIN);
+
     if (!cardNumber || cardNumber.replace(/\s/g, "").length !== 16) {
       throw new Error("Geçersiz kart numarası");
     }
@@ -102,10 +105,9 @@ export async function POST(request: Request) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        apiKey: process.env.EFIX_API_KEY || "50d54b52fa7c4284bcfef7409b520763",
+        apiKey: process.env.EFIXPAY_API_KEY,
         apiSecret:
-          process.env.EFIX_API_SECRET ||
-          "ad809e9bb8ca4fbf85820668c4b4ae757f39cabc28b5449eaf43d4d93e336a8a",
+          process.env.EFIXPAY_SECRET_KEY,
       }),
     });
     if (!tokenRes.ok) {
@@ -125,9 +127,9 @@ export async function POST(request: Request) {
         body: JSON.stringify({
           clientOrderId,
           totalAmount: amount,
-        successUrl: `${process.env.DOMAIN || 'http://localhost:3000'}/api/payments/callback`,
-        cancelUrl: `${process.env.DOMAIN || 'http://localhost:3000'}/api/payments/callback`,
-        declineUrl: `${process.env.DOMAIN || 'http://localhost:3000'}/api/payments/callback`,
+        successUrl: `${process.env.DOMAIN}/api/payments/callback`,
+        cancelUrl: `${process.env.DOMAIN}/api/payments/callback`,
+        declineUrl: `${process.env.DOMAIN}/api/payments/callback`,
         // successUrl: `http://localhost:3000/api/payments/callback`,
         // cancelUrl: `http://localhost:3000/api/payments/callback`,
         // declineUrl: `http://localhost:3000/api/payments/callback`,
@@ -147,9 +149,9 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         amount,
         language: "TR",
-        successUrl: `${process.env.DOMAIN || 'http://localhost:3000'}/api/payments/callback`,
-        cancelUrl: `${process.env.DOMAIN || 'http://localhost:3000'}/api/payments/callback`,
-        declineUrl: `${process.env.DOMAIN || 'http://localhost:3000'}/api/payments/callback`,
+        successUrl: `${process.env.DOMAIN}/api/payments/callback`,
+        cancelUrl: `${process.env.DOMAIN}/api/payments/callback`,
+        declineUrl: `${process.env.DOMAIN}/api/payments/callback`,
         // successUrl: `http://localhost:3000/api/payments/callback`,
         // cancelUrl: `http://localhost:3000/api/payments/callback`,
         // declineUrl: `http://localhost:3000/api/payments/callback`,
