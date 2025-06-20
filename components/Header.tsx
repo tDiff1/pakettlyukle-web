@@ -129,6 +129,17 @@ const Header = () => {
             </Link>
             <Link
               className={`text-lg p-2 ${
+                pathname === "/operatorler"
+                  ? "font-semibold text-gray-800 border-b-2 border-gray-800"
+                  : "text-gray-600 hover:text-gray-800"
+              }`}
+              href="/operatorler"
+              onClick={() => setMenuOpen(false)}
+            >
+              Operatörler{/* {getContent("header_title_two")} */}
+            </Link>
+            <Link
+              className={`text-lg p-2 ${
                 pathname === "/blog"
                   ? "font-semibold text-gray-800 border-b-2 border-gray-800"
                   : "text-gray-600 hover:text-gray-800"
@@ -168,6 +179,20 @@ const Header = () => {
                 onClick={() => setMenuOpen(false)}
               >
                 {getContent("header_title_one")}
+              </Link>
+            </p>
+            <p>
+              <Link
+                className={`block p-2 sm:p-3 text-base sm:text-lg lg:text-xl 
+                ${
+                  pathname === "/operatorler"
+                    ? "text-gray-800 font-semibold border-b-4 border-gray-800 transition-all duration-300 ease-in-out transform scale-105"
+                    : "text-gray-600 hover:text-gray-800 hover:scale-105 transition-all duration-300"
+                }`}
+                href="/operatorler"
+                onClick={() => setMenuOpen(false)}
+              >
+                Operatörler{/* {getContent("header_title_two")} */}
               </Link>
             </p>
             <p className="relative w-full sm:w-auto text-center">
