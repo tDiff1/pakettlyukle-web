@@ -4,7 +4,7 @@ import LayoutWrapper from "@/components/LayoutWrapper";
 import { Analytics } from "@vercel/analytics/next";
 import { FaviconUpdater } from "@/components/favicon-updater";
 import { Metadata } from "next";
-import Script from "next/script"; // Clarity için eklendi
+import Script from "next/script"; // Script eklendi
 
 const notoSans = Noto_Sans({
   variable: "--font-noto-sans",
@@ -74,6 +74,24 @@ export default function RootLayout({
   return (
     <html lang="tr">
       <head>
+        {/* Google Ads gtag.js */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=AW-17209968145"
+          strategy="afterInteractive"
+        />
+        <Script
+          id="gtag-init"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'AW-17209968145');
+            `,
+          }}
+        />
+
         {/* Microsoft Clarity Script */}
         <Script
           id="clarity-script"
