@@ -1,0 +1,23 @@
+# Googlebot
+User-agent: Googlebot
+Allow: /blog
+Allow: /operatorler/
+Allow: /operatorler/*/
+Allow: /
+Disallow: /auth/
+Disallow: /auth/admin
+
+# *
+User-agent: *
+Allow: /blog
+Allow: /operatorler/
+Allow: /operatorler/*/
+Allow: /
+Disallow: /auth/
+Disallow: /auth/admin
+
+# Host
+Host: https://pakettlyukle.com
+
+# Sitemaps
+Sitemap: https://pakettlyukle.com/sitemap.xml

@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postbuild": "next-sitemap"
   },
   "dependencies": {
     "@dnd-kit/modifiers": "^9.0.0",
@@ -32,6 +33,7 @@
     "lucide-react": "^0.503.0",
     "next": "^15.3.1",
     "next-mdx-remote": "^5.0.0",
+    "next-sitemap": "^4.2.3",
     "qs": "^6.14.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
