@@ -4,7 +4,7 @@ import LayoutWrapper from "@/components/LayoutWrapper";
 import { Analytics } from "@vercel/analytics/next";
 import { FaviconUpdater } from "@/components/favicon-updater";
 import { Metadata } from "next";
-import Script from "next/script"; // Script eklendi
+import Script from "next/script";
 
 const notoSans = Noto_Sans({
   variable: "--font-noto-sans",
@@ -74,7 +74,20 @@ export default function RootLayout({
   return (
     <html lang="tr">
       <head>
-        {/* Google Ads gtag.js */}
+        {/* Microsoft Clarity Script */}
+        <Script
+          id="clarity-script"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `(function(c,l,a,r,i,t,y){
+              c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+              t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+              y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+            })(window, document, "clarity", "script", "rs2g0cyb10");`,
+          }}
+        />
+
+        {/* Google tag (gtag.js) */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=AW-17209968145"
           strategy="afterInteractive"
@@ -91,17 +104,18 @@ export default function RootLayout({
             `,
           }}
         />
-
-        {/* Microsoft Clarity Script */}
+        {/* Event snippet for Ödeme başlatma conversion page */}
         <Script
-          id="clarity-script"
+          id="gtag-event"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{
-            __html: `(function(c,l,a,r,i,t,y){
-              c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-              t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-              y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-            })(window, document, "clarity", "script", "rs2g0cyb10");`,
+            __html: `
+              gtag('event', 'conversion', {
+                'send_to': 'AW-17209968145/IMZ3COmzjd8aEJGMrY5A',
+                'value': 1.0,
+                'currency': 'TRY'
+              });
+            `,
           }}
         />
       </head>
