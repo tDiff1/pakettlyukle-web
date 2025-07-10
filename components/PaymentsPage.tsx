@@ -411,7 +411,7 @@ export default function PaymentsPage() {
             )}
             {modalStatusOption === "İade Edildi" && (
               <p className="text-yellow-600 mb-4">
-                Paket iptal edildi. Lütfen faturalı durumu ve borç kontrol edin.
+                Paket başarıyla iptal edildi.
               </p>
             )}
 
