@@ -129,10 +129,10 @@ const Footer = () => {
             {operators.map((operator) => (
               <Link
                 key={operator.id}
-                href={`/kontor-yukleme/${operator.idName}`}
+                href={`/operatorler/${operator.idName}/paketler`}
                 className="hover:underline"
               >
-                {operator.name}
+                {operator.name} Paket
               </Link>
             ))}
           </div>

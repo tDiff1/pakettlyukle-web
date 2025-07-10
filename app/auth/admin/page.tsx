@@ -263,6 +263,67 @@ const AdminPage = () => {
     );
   }
 
+      return (
+      <div className="min-h-screen pt-10 relative">
+        <div className="absolute top-4 right-4 md:right-13 text-lg font-semibold text-red-500">
+          Kalan Süre: {formatTimeLeft(timeLeft)}
+        </div>
+        <div className="flex flex-col md:flex-row w-full h-auto md:h-[1100px]">
+          {/* Hamburger Menü Butonu (Mobil için) */}
+          <div className="md:hidden flex items-center justify-between p-4 bg-gray-100">
+            <h1 className="text-xl font-semibold">Hoş Geldin {authenticatedUser}</h1>
+            <button onClick={toggleMenu} className="text-2xl">
+              {isMenuOpen ? "✖" : "☰"}
+            </button>
+          </div>
+          {/* Menü (Mobil: Hamburger, Masaüstü: Sidebar) */}
+          <div
+            className={`${
+              isMenuOpen ? "block" : "hidden"
+            } md:block w-full md:w-1/5 bg-gray-100 md:bg-transparent p-4 md:ml-5 space-y-3 md:flex-col md:items-center md:justify-center transition-all`}
+          >
+            <h1 className="hidden md:block text-3xl bg-gray-100 p-5 font-semibold mb-6 rounded-3xl">
+              Hoş Geldin {authenticatedUser}
+            </h1>
+            {pages.map((pageName, index) => (
+              <button
+                key={index}
+                className={`w-full text-lg font-semibold bg-red-600 hover:bg-red-700 text-white rounded-3xl py-4 px-6 text-center ${
+                  activePage === index ? "ring-2 ring-black" : ""
+                }`}
+                onClick={() => {
+                  setActivePage(index);
+                  setIsMenuOpen(false); // Mobil menüyü kapat
+                }}
+              >
+                {pageName}
+              </button>
+            ))}
+          </div>
+          <div
+            className={`bg-white w-full md:w-3/4 rounded-3xl shadow-lg p-5 md:ml-5 transition-all duration-500 ease-in-out ${transitionClass} overflow-y-auto max-h-[1000px]`}
+          >
+            {activePage === 0 && (
+              <div>
+                <div className="flex flex-col md:flex-row space-y-5 md:space-y-0 md:space-x-5 mt-10">
+                  <LogoUploader />
+                  <FaviconUploader />
+                </div>
+                <div className="mt-10">
+                  <SmsRecipientsManager />
+                </div>
+              </div>
+            )}
+            {activePage === 1 && <PageEdit />}
+            {activePage === 2 && <OperatorsEdit />}
+            {activePage === 3 && <OperatorsPackets />}
+            {activePage === 4 && <BlogeEditPage />}
+            {activePage === 5 && <PaymentsPage />}
+          </div>
+        </div>
+      </div>
+    );
+
 return (
   <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
     {!isOtpSent ? (

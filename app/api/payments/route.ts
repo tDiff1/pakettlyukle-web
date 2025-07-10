@@ -88,6 +88,7 @@ export async function POST(request: Request) {
     const clientOrderId = `ORDER-${Date.now()}-${musteriNo.replace(/\s/g, "")}`;
     const payment = await prisma.payment.create({
       data: {
+        musteriNumber: cardHolder || null,
         musteriNo,
         operator,
         paket,

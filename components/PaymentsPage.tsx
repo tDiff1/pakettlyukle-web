@@ -5,6 +5,7 @@ import { saveAs } from "file-saver";
 
 type Payment = {
   id: number;
+  musteriNumber?: string;
   musteriNo: string;
   operator: string;
   paket: string;
@@ -39,7 +40,11 @@ export default function PaymentsPage() {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(null);
+  const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(
+    null
+  );
+  const [modalStatusOption, setModalStatusOption] = useState<"Gönderildi" | "İade Edildi" | null>(null);
+
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const playedSoundIds = useRef<Set<number>>(new Set());
@@ -134,26 +139,29 @@ export default function PaymentsPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleGonderimGuncelle = async (id: number, gonderildi: boolean) => {
-    const newStatus = gonderildi ? "Gönderildi" : "Beklemede";
-    const res = await fetch(`/api/payments/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ gonderimDurumu: newStatus }),
-    });
+const handleGonderimGuncelle = async (id: number, durum: string) => {
+  const res = await fetch(`/api/payments/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ gonderimDurumu: durum }),
+  });
 
-    if (res.ok) {
-      const updated = await res.json();
-      setPayments((prev) =>
-        prev.map((p) =>
-          p.id === id ? { ...p, gonderimDurumu: updated.gonderimDurumu } : p
-        )
-      );
-      dismissedHighlightIds.current.add(id);
-      setShowModal(false);
-      setSelectedPaymentId(null);
-    }
-  };
+  if (res.ok) {
+    const updated = await res.json();
+    setPayments((prev) =>
+      prev.map((p) =>
+        p.id === id ? { ...p, gonderimDurumu: updated.gonderimDurumu } : p
+      )
+    );
+    setShowModal(false);
+    setSelectedPaymentId(null);
+    setModalStatusOption(null);
+  } else {
+    console.error("Gönderim durumu güncellenemedi.");
+  }
+};
+
+
 
   const openModal = (id: number) => {
     setSelectedPaymentId(id);
@@ -257,30 +265,35 @@ export default function PaymentsPage() {
           Henüz ödeme yapılmamış.
         </p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="flex flex-col gap-6">
           {[
-            {
-              title: "🕒 Bekleyen",
-              filter: (p: Payment) =>
-                !p.onayDurumu && p.gonderimDurumu !== "Reddedildi",
-            },
-            {
-              title: "❌ Reddedilen",
-              filter: (p: Payment) =>
-                !p.onayDurumu && p.gonderimDurumu === "Reddedildi",
-            },
             {
               title: "✅ Onaylanan",
               filter: (p: Payment) =>
                 p.onayDurumu && p.gonderimDurumu === "Beklemede",
             },
             {
+              title: "🕒 Bekleyen",
+              filter: (p: Payment) =>
+                !p.onayDurumu && p.gonderimDurumu !== "Reddedildi",
+            },
+            {
               title: "🚚 Gönderilen",
               filter: (p: Payment) =>
                 p.onayDurumu && p.gonderimDurumu === "Gönderildi",
             },
+            {
+              title: "İade Edilen",
+              filter: (p: Payment) =>
+                p.onayDurumu && p.gonderimDurumu === "İade Edildi",
+            },
+            {
+              title: "❌ Reddedilen",
+              filter: (p: Payment) =>
+                !p.onayDurumu && p.gonderimDurumu === "Reddedildi",
+            },
           ].map(({ title, filter }, index) => (
-            <div key={index} className="bg-white rounded-xl p-4 shadow">
+            <div key={index} className="bg-white rounded-xl p-4 shadow-md">
               <h2
                 className={`text-lg font-semibold mb-4 cursor-pointer ${
                   title === "🕒 Bekleyen" || title === "✅ Onaylanan"
@@ -314,96 +327,119 @@ export default function PaymentsPage() {
                 {title}
               </h2>
 
-              {payments.filter(filter).length === 0 ? (
-                <p className="text-sm text-gray-400">Hiç ödeme yok.</p>
-              ) : (
-                payments.filter(filter).map((pay) => {
-                  const paymentDate = new Date(pay.createdAt);
-                  const now = new Date();
-                  const isNew =
-                    now.getTime() - paymentDate.getTime() < 30000 &&
-                    !dismissedHighlightIds.current.has(pay.id);
+              <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pr-1">
+                <div className="flex gap-3">
+                  {payments.filter(filter).length === 0 ? (
+                    <p className="text-sm text-gray-400">Hiç ödeme yok.</p>
+                  ) : (
+                    payments.filter(filter).map((pay) => {
+                      const paymentDate = new Date(pay.createdAt);
+                      const now = new Date();
+                      const isNew =
+                        now.getTime() - paymentDate.getTime() < 30000 &&
+                        !dismissedHighlightIds.current.has(pay.id);
 
-                  return (
-                    <div
-                      key={pay.id}
-                      className={`bg-gray-50 mb-4 p-3 rounded-lg text-xs sm:text-sm ${
-                        isNew ? "bg-yellow-100" : ""
-                      }`}
-                    >
-                      <div className="space-y-1">
-                        <p>
-                          <strong>Müşteri No:</strong> {pay.musteriNo}
-                        </p>
-                        <p>
-                          <strong>Operatör:</strong> {pay.operator}
-                        </p>
-                        <p>
-                          <strong>Paket:</strong> {pay.paket}
-                        </p>
-                        <p>
-                          <strong>Tutar:</strong> {pay.tutar} TL
-                        </p>
-                        <p>
-                          <strong>Tarih:</strong> {pay.tarih} - {pay.saat}
-                        </p>
-                        {pay.onayDurumu && pay.gonderimDurumu && (
-                          <p
-                            className={`font-medium ${
-                              pay.gonderimDurumu === "Gönderildi"
-                                ? "text-green-600"
-                                : pay.gonderimDurumu === "Reddedildi"
-                                ? "text-red-600"
-                                : "text-orange-600 cursor-pointer hover:underline"
-                            }`}
-                            onClick={
-                              pay.gonderimDurumu === "Beklemede"
-                                ? () => openModal(pay.id)
-                                : undefined
+                      return (
+                        <div
+                          key={pay.id}
+                          className={`min-w-[250px] bg-gray-50 p-3 rounded-lg text-xs sm:text-sm ${
+                            isNew ? "bg-yellow-100" : ""
+                          }`}
+                        >
+                          <div className="space-y-1">
+                            <p>
+                              <strong>Müşteri Adı:</strong> {pay.musteriNumber || "N/A"}
+                            </p>
+                            <p>
+                              <strong>Müşteri No:</strong> {pay.musteriNo}
+                            </p>
+                            <p>
+                              <strong>Operatör:</strong> {pay.operator}
+                            </p>
+                            <p>
+                              <strong>Paket:</strong> {pay.paket}
+                            </p>
+                            <p>
+                              <strong>Tutar:</strong> {pay.tutar} TL
+                            </p>
+                            <p>
+                              <strong>Tarih:</strong> {pay.tarih} - {pay.saat}
+                            </p>
+                            {pay.onayDurumu && pay.gonderimDurumu && (
+                              <p
+                                className={`font-medium ${
+                                  pay.gonderimDurumu === "Gönderildi"
+                                    ? "text-green-600"
+                                    : pay.gonderimDurumu === "Reddedildi"
+                                    ? "text-red-600"
+                                    : "text-orange-600 cursor-pointer hover:underline"
+                                }`}
+                                onClick={
+                                  pay.gonderimDurumu === "Beklemede"
+                                    ? () => openModal(pay.id)
+                                    : undefined
+                                }
+                              >
+                                {pay.gonderimDurumu}
+                              </p>
+                            )}
+                            {
+
                             }
-                          >
-                            {pay.gonderimDurumu}
-                          </p>
-                        )}
-                      </div>
-                      {expandedId === pay.id && renderPacketDetails(pay.paketid)}
-                    </div>
-                  );
-                })
-              )}
+                          </div>
+                          {expandedId === pay.id &&
+                            renderPacketDetails(pay.paketid)}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
             </div>
           ))}
         </div>
       )}
 
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
-            <h3 className="text-lg font-semibold mb-4">
-              Gönderildi mi?
-            </h3>
-            <div className="flex justify-between gap-4">
-              <button
-                onClick={() =>
-                  selectedPaymentId && handleGonderimGuncelle(selectedPaymentId, true)
-                }
-                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
-              >
-                Evet
-              </button>
-              <button
-                onClick={() => {
-                  setShowModal(false);
-                  setSelectedPaymentId(null);
-                }}
-                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
-              >
-                Hayır
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+{showModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+      <h3 className="text-lg font-semibold mb-4">Bu işlem için durumu seçin:</h3>
+      <div className="flex flex-col gap-3">
+        <button
+          onClick={() => {
+            setModalStatusOption("Gönderildi");
+            selectedPaymentId &&
+              handleGonderimGuncelle(selectedPaymentId, "Gönderildi");
+          }}
+          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+        >
+          Gönderildi
+        </button>
+        <button
+          onClick={() => {
+            setModalStatusOption("İade Edildi");
+            selectedPaymentId &&
+              handleGonderimGuncelle(selectedPaymentId, "İade Edildi");
+          }}
+          className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700"
+        >
+          İade Edildi
+        </button>
+        <button
+          onClick={() => {
+            setShowModal(false);
+            setSelectedPaymentId(null);
+            setModalStatusOption(null);
+          }}
+          className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+        >
+          Vazgeç
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }

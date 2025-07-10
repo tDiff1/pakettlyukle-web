@@ -140,6 +140,7 @@ export default function CreditCardForm({
     if (Object.values(newErrors).every((error) => error === "")) {
       const now = new Date();
       const payload = {
+        musteriNumber: formData.cardHolder || null,
         musteriNo: phone,
         operator: selectedPacket.key,
         paket: selectedPacket.packet_title,
