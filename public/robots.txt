@@ -1,45 +1,23 @@
 # Googlebot
 User-agent: Googlebot
+Allow: /blog
+Allow: /operatorler/
+Allow: /operatorler/*/
+Allow: /
 Disallow: /auth/
 Disallow: /auth/admin
-Allow: /
 
-# GPTBot (OpenAI)
-User-agent: GPTBot
-Disallow:
-Allow: /
-
-# CCBot (Common Crawl)
-User-agent: CCBot
-Disallow:
-Allow: /
-
-# Bingbot (Microsoft)
-User-agent: Bingbot
-Disallow: /auth/
-Disallow: /auth/admin
-Allow: /
-
-# YandexBot
-User-agent: Yandex
-Disallow: /auth/
-Disallow: /auth/admin
-Allow: /
-
-# AhrefsBot
-User-agent: AhrefsBot
-Disallow: /auth/
-Disallow: /auth/admin
-Allow: /
-
-# Diğer tüm botlar
+# *
 User-agent: *
+Allow: /blog
+Allow: /operatorler/
+Allow: /operatorler/*/
+Allow: /
 Disallow: /auth/
 Disallow: /auth/admin
-Allow: /
 
-# Host tanımı
+# Host
 Host: https://pakettlyukle.com
 
-# Site haritası
+# Sitemaps
 Sitemap: https://pakettlyukle.com/sitemap.xml

@@ -43,8 +43,9 @@ export default function PaymentsPage() {
   const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(
     null
   );
-  const [modalStatusOption, setModalStatusOption] = useState<"Gönderildi" | "İade Edildi" | null>(null);
-
+  const [modalStatusOption, setModalStatusOption] = useState<
+    "Gönderildi" | "İade Edildi" | null
+  >(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const playedSoundIds = useRef<Set<number>>(new Set());
@@ -139,29 +140,27 @@ export default function PaymentsPage() {
     return () => clearInterval(interval);
   }, []);
 
-const handleGonderimGuncelle = async (id: number, durum: string) => {
-  const res = await fetch(`/api/payments/${id}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ gonderimDurumu: durum }),
-  });
+  const handleGonderimGuncelle = async (id: number, durum: string) => {
+    const res = await fetch(`/api/payments/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ gonderimDurumu: durum }),
+    });
 
-  if (res.ok) {
-    const updated = await res.json();
-    setPayments((prev) =>
-      prev.map((p) =>
-        p.id === id ? { ...p, gonderimDurumu: updated.gonderimDurumu } : p
-      )
-    );
-    setShowModal(false);
-    setSelectedPaymentId(null);
-    setModalStatusOption(null);
-  } else {
-    console.error("Gönderim durumu güncellenemedi.");
-  }
-};
-
-
+    if (res.ok) {
+      const updated = await res.json();
+      setPayments((prev) =>
+        prev.map((p) =>
+          p.id === id ? { ...p, gonderimDurumu: updated.gonderimDurumu } : p
+        )
+      );
+      setShowModal(false);
+      setSelectedPaymentId(null);
+      setModalStatusOption(null);
+    } else {
+      console.error("Gönderim durumu güncellenemedi.");
+    }
+  };
 
   const openModal = (id: number) => {
     setSelectedPaymentId(id);
@@ -348,7 +347,8 @@ const handleGonderimGuncelle = async (id: number, durum: string) => {
                         >
                           <div className="space-y-1">
                             <p>
-                              <strong>Müşteri Adı:</strong> {pay.musteriNumber || "N/A"}
+                              <strong>Müşteri Adı:</strong>{" "}
+                              {pay.musteriNumber || "N/A"}
                             </p>
                             <p>
                               <strong>Müşteri No:</strong> {pay.musteriNo}
@@ -383,9 +383,7 @@ const handleGonderimGuncelle = async (id: number, durum: string) => {
                                 {pay.gonderimDurumu}
                               </p>
                             )}
-                            {
-
-                            }
+                            {}
                           </div>
                           {expandedId === pay.id &&
                             renderPacketDetails(pay.paketid)}
@@ -400,46 +398,62 @@ const handleGonderimGuncelle = async (id: number, durum: string) => {
         </div>
       )}
 
-{showModal && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
-      <h3 className="text-lg font-semibold mb-4">Bu işlem için durumu seçin:</h3>
-      <div className="flex flex-col gap-3">
-        <button
-          onClick={() => {
-            setModalStatusOption("Gönderildi");
-            selectedPaymentId &&
-              handleGonderimGuncelle(selectedPaymentId, "Gönderildi");
-          }}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
-        >
-          Gönderildi
-        </button>
-        <button
-          onClick={() => {
-            setModalStatusOption("İade Edildi");
-            selectedPaymentId &&
-              handleGonderimGuncelle(selectedPaymentId, "İade Edildi");
-          }}
-          className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700"
-        >
-          İade Edildi
-        </button>
-        <button
-          onClick={() => {
-            setShowModal(false);
-            setSelectedPaymentId(null);
-            setModalStatusOption(null);
-          }}
-          className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
-        >
-          Vazgeç
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+            <h3 className="text-lg font-semibold mb-4">
+              Bu işlem için durumu seçin:
+            </h3>
 
+            {/* Duruma göre gösterilecek mesaj */}
+            {modalStatusOption === "Gönderildi" && (
+              <p className="text-green-600 mb-4">Paket başarıyla gönderildi!</p>
+            )}
+            {modalStatusOption === "İade Edildi" && (
+              <p className="text-yellow-600 mb-4">
+                Paket iptal edildi. Lütfen faturalı durumu ve borç kontrol edin.
+              </p>
+            )}
+
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => {
+                  setModalStatusOption("Gönderildi");
+                  if (selectedPaymentId) {
+                    handleGonderimGuncelle(selectedPaymentId, "Gönderildi");
+                  }
+                }}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+              >
+                Gönderildi
+              </button>
+
+              <button
+                onClick={() => {
+                  setModalStatusOption("İade Edildi");
+                  if (selectedPaymentId) {
+                    handleGonderimGuncelle(selectedPaymentId, "İade Edildi");
+                  }
+                }}
+                className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700"
+              >
+                İade Edildi
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowModal(false);
+                  setSelectedPaymentId(null);
+                  setModalStatusOption(null);
+                }}
+                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+              >
+                Vazgeç
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
