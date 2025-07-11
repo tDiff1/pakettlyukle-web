@@ -62,6 +62,10 @@ export async function generateMetadata(): Promise<Metadata> {
     alternates: {
       canonical: "/",
     },
+    // ✅ YANDEX METRICA DOĞRULAMA BURADA
+    other: {
+      "yandex-verification": "f391876d922f5a31",
+    },
   };
 }
 
