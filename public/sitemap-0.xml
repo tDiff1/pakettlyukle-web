@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
-<url><loc>https://pakettlyukle.com/cancel</loc><lastmod>2025-07-10T12:17:39.026Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://pakettlyukle.com/success</loc><lastmod>2025-07-10T12:17:39.027Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://pakettlyukle.com/operatorler</loc><lastmod>2025-07-10T12:17:39.027Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://pakettlyukle.com/pakettlyukle</loc><lastmod>2025-07-10T12:17:39.027Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://pakettlyukle.com/decline</loc><lastmod>2025-07-10T12:17:39.027Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://pakettlyukle.com/yasal</loc><lastmod>2025-07-10T12:17:39.027Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://pakettlyukle.com/blog</loc><lastmod>2025-07-10T12:17:39.027Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://pakettlyukle.com</loc><lastmod>2025-07-10T12:17:39.027Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://pakettlyukle.com/decline</loc><lastmod>2025-07-14T20:41:04.985Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://pakettlyukle.com/success</loc><lastmod>2025-07-14T20:41:04.986Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://pakettlyukle.com</loc><lastmod>2025-07-14T20:41:04.986Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://pakettlyukle.com/operatorler</loc><lastmod>2025-07-14T20:41:04.986Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://pakettlyukle.com/cancel</loc><lastmod>2025-07-14T20:41:04.986Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://pakettlyukle.com/iletisim</loc><lastmod>2025-07-14T20:41:04.986Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://pakettlyukle.com/blog</loc><lastmod>2025-07-14T20:41:04.986Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://pakettlyukle.com/yasal</loc><lastmod>2025-07-14T20:41:04.986Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://pakettlyukle.com/pakettlyukle</loc><lastmod>2025-07-14T20:41:04.986Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
 </urlset>

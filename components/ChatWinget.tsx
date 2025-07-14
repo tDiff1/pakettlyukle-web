@@ -1,193 +1,91 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { MessageCircle, X } from "lucide-react";
 
+const messages = [
+  "Sorun mu yaşıyorsunuz? Bizimle iletişime geçin!",
+  "Her türlü sorunuz için buradayız!",
+  "Destek ekibimiz size yardımcı olmaya hazır.",
+  "Hızlı cevap almak için iletişime geçin!",
+];
+
 export default function FloatingContactWidget() {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    contactPhone: "",
-    message: "",
-  });
-  const [errors, setErrors] = useState({
-    name: "",
-    contactPhone: "",
-    message: "",
-  });
-  const [submitted, setSubmitted] = useState(false);
-  const [hasCooldown, setHasCooldown] = useState(false);
+  const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
+  const [isMessageVisible, setIsMessageVisible] = useState(true);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (isOpen) return; // Açıkken mesaj geçişi durur
 
-    const lastSubmit = localStorage.getItem("contactFormSubmittedAt");
-    if (lastSubmit) {
-      const elapsed = Date.now() - Number(lastSubmit);
-      const twelveHours = 1 * 60 * 60 * 1000;
-
-      if (elapsed < twelveHours) {
-        setHasCooldown(true);
-      } else {
-        setHasCooldown(false);
-        localStorage.removeItem("contactFormSubmittedAt");
-      }
+    if (isMessageVisible) {
+      timeoutRef.current = setTimeout(() => {
+        setIsMessageVisible(false);
+      }, 15000);
     } else {
-      setHasCooldown(false);
-    }
-  }, [isOpen]);
-
-  const validate = () => {
-    let valid = true;
-    const newErrors = { name: "", contactPhone: "", message: "" };
-
-    if (formData.name.trim().length < 3) {
-      newErrors.name = "En az 3 karakter girin.";
-      valid = false;
+      timeoutRef.current = setTimeout(() => {
+        setCurrentMessageIndex((prev) => (prev + 1) % messages.length);
+        setIsMessageVisible(true);
+      }, 500);
     }
 
-    if (!/^\d{10}$/.test(formData.contactPhone)) {
-      newErrors.contactPhone = "10 haneli geçerli bir numara girin.";
-      valid = false;
-    }
-
-    if (formData.message.trim().length < 3) {
-      newErrors.message = "En az 3 karakter girin.";
-      valid = false;
-    }
-
-    setErrors(newErrors);
-    return valid;
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-
-    if (name === "contactPhone") {
-      if (!/^\d*$/.test(value)) return;
-    }
-
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validate()) return;
-
-    try {
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (res.ok) {
-        localStorage.setItem("contactFormSubmittedAt", Date.now().toString());
-        setSubmitted(true);
-        setFormData({ name: "", contactPhone: "", message: "" });
-      } else {
-        const data = await res.json();
-        console.error("Gönderim hatası:", data.error);
-        alert("Mesaj gönderilirken bir hata oluştu.");
-      }
-    } catch (err) {
-      console.error("İstek hatası:", err);
-      alert("Bir hata oluştu, lütfen tekrar deneyin.");
-    }
-  };
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [isMessageVisible, isOpen, currentMessageIndex]);
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end space-y-1 max-w-[300px]">
       {isOpen && (
-        <div className="w-80 max-w-[90vw] bg-white rounded-2xl shadow-2xl border border-gray-200 p-4 mb-3 animate-fade-in">
-          <div className="flex justify-between items-center mb-2">
-            <h2 className="font-semibold text-lg text-gray-800">İletişim Formu</h2>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="text-gray-500 hover:text-red-500"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+        <div className="bg-white rounded-xl shadow-lg p-4 border border-gray-200 w-full relative overflow-hidden">
+          <button
+            onClick={() => setIsOpen(false)}
+            className="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition"
+            aria-label="Kapat"
+          >
+            <X className="w-5 h-5" />
+          </button>
 
-          {hasCooldown ? (
-            <p className="text-gray-700 text-sm text-center font-medium">
-              Formunuz iletildi. En kısa sürede dönüş yapılacaktır.
-            </p>
-          ) : submitted ? (
-            <p className="text-green-600 text-sm text-center font-medium">
-              Mesajınız gönderildi. Geri dönüş sağlanacaktır!
-            </p>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div>
-                <input
-                  type="text"
-                  name="name"
-                  required
-                  placeholder="İsim Soyisim"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-                />
-                {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
-              </div>
+          <p className="text-gray-800 font-semibold text-base mb-4">
+            Sorun mu yaşıyorsunuz? Bizimle iletişime geçin!
+          </p>
 
-              <div>
-                <input
-                  type="tel"
-                  name="contactPhone"
-                  required
-                  placeholder="İletişim Telefonu (5XXXXXXXXX)"
-                  value={formData.contactPhone}
-                  onChange={handleChange}
-                  maxLength={10}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-                />
-                {errors.contactPhone && (
-                  <p className="text-red-500 text-xs mt-1">{errors.contactPhone}</p>
-                )}
-              </div>
-
-              <div>
-                <textarea
-                  name="message"
-                  required
-                  placeholder="Açıklama"
-                  rows={3}
-                  value={formData.message}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-                ></textarea>
-                {errors.message && (
-                  <p className="text-red-500 text-xs mt-1">{errors.message}</p>
-                )}
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 rounded-lg"
-              >
-                Gönder
-              </button>
-            </form>
-          )}
+          <button
+            onClick={() => router.push("/iletisim")}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium transition"
+          >
+            İletişim Sayfasına Git
+          </button>
         </div>
       )}
 
-      <button
-        onClick={() => {
-          setIsOpen((prev) => !prev);
-          setSubmitted(false);
-          setErrors({ name: "", contactPhone: "", message: "" });
-        }}
-        className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg transition transform hover:scale-105"
-        aria-label="Destek Formu Aç"
-      >
-        <MessageCircle className="w-5 h-5" />
-      </button>
+      {!isOpen && (
+        <>
+          {/* Mesaj kutusu - butonun hemen üstünde ve ortalanmış */}
+          <div
+            key={currentMessageIndex}
+            className={`bg-white border border-gray-300 rounded-lg px-4 py-2 shadow-md text-gray-800 font-semibold text-sm max-w-[300px] whitespace-normal break-words relative transition-opacity duration-700 ${
+              isMessageVisible ? "opacity-100" : "opacity-0"
+            }`}
+            style={{ minWidth: "220px", marginRight: "8px" }} // Sağdan biraz boşluk
+          >
+            {messages[currentMessageIndex]}
+          </div>
+
+          {/* İletişim butonu sağ alt köşede */}
+          <button
+            onClick={() => setIsOpen(true)}
+            aria-label="İletişim widget'ını aç"
+            title="İletişim widget'ını aç"
+            className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg transition-transform hover:scale-110 flex items-center justify-center"
+          >
+            <MessageCircle className="w-6 h-6" />
+          </button>
+        </>
+      )}
     </div>
   );
 }

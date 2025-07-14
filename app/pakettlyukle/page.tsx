@@ -86,7 +86,7 @@ const PakettlyukleContent = () => {
                 </div>
             </div>
 
-            {/* İletişim */}
+            {/* İletişim
             <div>
                 <div
                     id="iletisim"
@@ -105,7 +105,7 @@ const PakettlyukleContent = () => {
                         {getContent('iletisim_description')}
                     </p>
                 </div>
-            </div>
+            </div> */}
 
             {/* E-Fatura */}
             <div>

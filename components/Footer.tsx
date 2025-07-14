@@ -191,7 +191,7 @@ const Footer = () => {
               Hakkımızda
             </Link>
             <Link
-              href="/pakettlyukle?section=iletisim"
+              href="/iletisim"
               className="hover:underline"
             >
               İletişim
@@ -207,8 +207,11 @@ const Footer = () => {
             </Link>
           </div>
         </div>
-        <div className="items-center">
-          <p className="text-xs mt-3 pt-9">
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold mb-3">
+            Hizmet Altyapımız
+          </h1>
+          <p className="text-sm text-gray-800 leading-snug">
             T TELEKOMİNASYON ELEKTRONİK SİSİTEMLERİ SAN.VE TİC. LTD.ŞTİ i, 6493
             sayılı Ödeme ve Menkul Kıymet Mutabakat Sistemleri, Ödeme Hizmetleri
             ve Elektronik Para Kuruluşları Hakkında Kanun çerçevesinde
