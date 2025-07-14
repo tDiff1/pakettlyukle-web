@@ -129,7 +129,7 @@ export default function ContactPage() {
 
       if (response.ok) {
         // Başarılı gönderim sonrası 2 saat timeout ayarla
-        const expireAt = Date.now() + 2 * 60 * 1000; // 2 saat ms cinsinden
+        const expireAt = Date.now() + 2 * 60 * 60 * 1000; // 2 saat ms cinsinden
         localStorage.setItem(TIMEOUT_KEY, expireAt.toString());
 
         setShowTimeoutPopup(true);
