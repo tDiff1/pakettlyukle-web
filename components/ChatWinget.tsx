@@ -19,7 +19,7 @@ export default function FloatingContactWidget() {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (isOpen) return; // Açıkken mesaj geçişi durur
+    if (isOpen) return;
 
     if (isMessageVisible) {
       timeoutRef.current = setTimeout(() => {
@@ -38,7 +38,7 @@ export default function FloatingContactWidget() {
   }, [isMessageVisible, isOpen, currentMessageIndex]);
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end space-y-1 max-w-[300px]">
+    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end space-y-1 max-w-[90vw] sm:max-w-[300px] w-full sm:w-auto">
       {isOpen && (
         <div className="bg-white rounded-xl shadow-lg p-4 border border-gray-200 w-full relative overflow-hidden">
           <button
@@ -62,30 +62,35 @@ export default function FloatingContactWidget() {
         </div>
       )}
 
-      {!isOpen && (
-        <>
-          {/* Mesaj kutusu - butonun hemen üstünde ve ortalanmış */}
-          <div
-            key={currentMessageIndex}
-            className={`bg-white border border-gray-300 rounded-lg px-4 py-2 shadow-md text-gray-800 font-semibold text-sm max-w-[300px] whitespace-normal break-words relative transition-opacity duration-700 ${
-              isMessageVisible ? "opacity-100" : "opacity-0"
-            }`}
-            style={{ minWidth: "220px", marginRight: "8px" }} // Sağdan biraz boşluk
-          >
-            {messages[currentMessageIndex]}
-          </div>
+{!isOpen && (
+  <>
+    {/* Mesaj kutusu - butonun hemen üstünde */}
+    <div
+      key={currentMessageIndex}
+      className={`bg-white border border-gray-300 rounded-lg px-4 py-2 shadow-md text-gray-800 font-semibold text-sm relative transition-opacity duration-700 ${
+        isMessageVisible ? "opacity-100" : "opacity-0"
+      } hidden sm:block`} // 🔁 Bu satıra dikkat
+      style={{
+        minWidth: "220px",
+        maxWidth: "90vw",
+        wordWrap: "break-word",
+      }}
+    >
+      {messages[currentMessageIndex]}
+    </div>
 
-          {/* İletişim butonu sağ alt köşede */}
-          <button
-            onClick={() => setIsOpen(true)}
-            aria-label="İletişim widget'ını aç"
-            title="İletişim widget'ını aç"
-            className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg transition-transform hover:scale-110 flex items-center justify-center"
-          >
-            <MessageCircle className="w-6 h-6" />
-          </button>
-        </>
-      )}
+    {/* İletişim butonu */}
+    <button
+      onClick={() => setIsOpen(true)}
+      aria-label="İletişim widget'ını aç"
+      title="İletişim widget'ını aç"
+      className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg transition-transform hover:scale-110 flex items-center justify-center"
+    >
+      <MessageCircle className="w-6 h-6" />
+    </button>
+  </>
+)}
+
     </div>
   );
 }
