@@ -17,7 +17,7 @@ export default function ContactPage() {
     fullName: "",
     email: "",
     contactNumber: "", // sadece 10 hane girilecek (0 hariç)
-    loadedNumber: "",   // sadece 10 hane girilecek (0 hariç)
+    loadedNumber: "", // sadece 10 hane girilecek (0 hariç)
     message: "",
   });
 
@@ -47,7 +47,10 @@ export default function ContactPage() {
   }, []);
 
   // Input değişimi, 0 olmadan sadece 10 hane
-  const handlePhoneChange = (field: "contactNumber" | "loadedNumber", value: string) => {
+  const handlePhoneChange = (
+    field: "contactNumber" | "loadedNumber",
+    value: string
+  ) => {
     // Sadece rakam al, 10 haneye kes
     const digits = value.replace(/\D/g, "").slice(0, 10);
     setFormData((prev) => ({ ...prev, [field]: digits }));
@@ -93,12 +96,16 @@ export default function ContactPage() {
     }
 
     if (formData.contactNumber.length !== 10) {
-      alert("Lütfen geçerli bir iletişim numarası giriniz (başında 0 olmadan 10 haneli).");
+      alert(
+        "Lütfen geçerli bir iletişim numarası giriniz (başında 0 olmadan 10 haneli)."
+      );
       return;
     }
 
     if (formData.loadedNumber.length !== 10) {
-      alert("Lütfen geçerli bir yükleme yapılan numara giriniz (başında 0 olmadan 10 haneli).");
+      alert(
+        "Lütfen geçerli bir yükleme yapılan numara giriniz (başında 0 olmadan 10 haneli)."
+      );
       return;
     }
 
@@ -133,7 +140,9 @@ export default function ContactPage() {
         localStorage.setItem(TIMEOUT_KEY, expireAt.toString());
 
         setShowTimeoutPopup(true);
-        setTimeLeftMsg("Form başarıyla gönderildi. 2 saat içinde tekrar gönderim yapamazsınız.");
+        setTimeLeftMsg(
+          "Form başarıyla gönderildi. 2 saat içinde tekrar gönderim yapamazsınız."
+        );
 
         setFormData({
           fullName: "",
@@ -154,51 +163,54 @@ export default function ContactPage() {
   };
 
   // Popup component
-const Popup = ({
-  message,
-  onClose,
-  isSuccess = false,
-}: {
-  message: string;
-  onClose: () => void;
-  isSuccess?: boolean;
-}) => (
-  <div
-    className="fixed inset-0 flex items-center justify-center z-50  bg-opacity-30 backdrop-blur-md transition-opacity duration-300"
-    onClick={onClose}
-  >
+  const Popup = ({
+    message,
+    onClose,
+    isSuccess = false,
+  }: {
+    message: string;
+    onClose: () => void;
+    isSuccess?: boolean;
+  }) => (
     <div
-      className={`bg-white rounded-xl p-6 max-w-sm w-full shadow-lg text-center transform transition-transform duration-300 ease-out
-      ${isSuccess ? "border-green-500 border-2" : "border-red-500 border-2"}`}
-      onClick={(e) => e.stopPropagation()}
-      style={{ animation: "popupFadeIn 0.3s ease forwards" }}
+      className="fixed inset-0 flex items-center justify-center z-50  bg-opacity-30 backdrop-blur-md transition-opacity duration-300"
+      onClick={onClose}
     >
-      <p className={`mb-6 text-lg ${isSuccess ? "text-green-600" : "text-red-600"}`}>
-        {message}
-      </p>
-      <button
-        className="px-5 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition"
-        onClick={onClose}
+      <div
+        className={`bg-white rounded-xl p-6 max-w-sm w-full shadow-lg text-center transform transition-transform duration-300 ease-out
+      ${isSuccess ? "border-green-500 border-2" : "border-red-500 border-2"}`}
+        onClick={(e) => e.stopPropagation()}
+        style={{ animation: "popupFadeIn 0.3s ease forwards" }}
       >
-        Anladım
-      </button>
+        <p
+          className={`mb-6 text-lg ${
+            isSuccess ? "text-green-600" : "text-red-600"
+          }`}
+        >
+          {message}
+        </p>
+        <button
+          className="px-5 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition"
+          onClick={onClose}
+        >
+          Anladım
+        </button>
+      </div>
+
+      <style jsx>{`
+        @keyframes popupFadeIn {
+          from {
+            opacity: 0;
+            transform: scale(0.9);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+      `}</style>
     </div>
-
-    <style jsx>{`
-      @keyframes popupFadeIn {
-        from {
-          opacity: 0;
-          transform: scale(0.9);
-        }
-        to {
-          opacity: 1;
-          transform: scale(1);
-        }
-      }
-    `}</style>
-  </div>
-);
-
+  );
 
   return (
     <>
@@ -209,16 +221,15 @@ const Popup = ({
           isSuccess={timeLeftMsg.startsWith("Form başarıyla")}
         />
       )}
-
-      <main className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-center text-blue-700 mb-6">
+      <main className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-6 sm:p-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-center text-blue-700 mb-6">
             İletişim Formu
           </h1>
 
           <form
             onSubmit={handleSubmit}
-            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+            className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6"
           >
             {/* Ad Soyad */}
             <div className="col-span-1">
@@ -351,7 +362,7 @@ const Popup = ({
           </form>
 
           {/* İletişim Bilgileri */}
-          <div className="mt-12 border-t pt-6 text-center text-sm text-gray-500 space-y-2">
+          <div className="mt-10 sm:mt-12 border-t pt-6 text-center text-sm text-gray-500 space-y-2">
             <p>
               <strong>Telefon:</strong>{" "}
               <a
