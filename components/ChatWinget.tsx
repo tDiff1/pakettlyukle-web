@@ -38,7 +38,7 @@ export default function FloatingContactWidget() {
   }, [isMessageVisible, isOpen, currentMessageIndex]);
 
   return (
-    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end space-y-1 max-w-[90vw] sm:max-w-[300px] w-full sm:w-auto">
+    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end space-y-1 w-auto max-w-[90vw] sm:max-w-[300px]">
       {isOpen && (
         <div className="bg-white rounded-xl shadow-lg p-4 border border-gray-200 w-full relative overflow-hidden">
           <button
